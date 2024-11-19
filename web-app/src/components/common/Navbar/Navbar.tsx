@@ -29,13 +29,15 @@ export default function Navbar() {
         isScrolled ? "shadow" : ""
       )}
     >
-      <div className="container flex h-14 items-center px-6 mx-auto">
+      <div className="container flex h-14 items-center px-6 mx-auto gap-3">
         <div className="mr-4 hidden md:flex">
-          <Link href="/" className="mr-10 flex items-center space-x-2">
+          <Link href="/" className="mr-6 flex items-center space-x-2">
             <Sparkles />
-            <span className="hidden font-bold sm:inline-block">NFT Market</span>
+            <span className="hidden font-bold lg:inline-block text-nowrap">
+              NFT Market
+            </span>
           </Link>
-          <nav className="flex items-center space-x-1 text-sm font-medium">
+          <nav className="flex items-center space-x-0 text-sm font-medium">
             {NAV_LINKS.map(({ label, href }, idx) => (
               <NavLink key={idx} label={label} href={href} />
             ))}

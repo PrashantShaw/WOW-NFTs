@@ -9,12 +9,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Bell } from "lucide-react";
+import {
+  AlignVerticalJustifyEnd,
+  Bell,
+  CircleHelp,
+  Unplug,
+  User,
+} from "lucide-react";
 import { ThemeToggler } from "../ThemeToggler";
+import SearchNFTs from "../SearchNFTs";
 const NavbarActions = () => {
   return (
     <div className="flex flex-1 items-center justify-end space-x-4">
-      <nav className="flex items-center space-x-2">
+      <SearchNFTs />
+      <nav className="flex items-center space-x-1">
         <ThemeToggler />
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
@@ -24,7 +32,7 @@ const NavbarActions = () => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuLabel>Notifications</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>Profile</DropdownMenuItem>
             <DropdownMenuItem>Billing</DropdownMenuItem>
@@ -41,12 +49,24 @@ const NavbarActions = () => {
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuLabel>Username here</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Profile</DropdownMenuItem>
-            <DropdownMenuItem>Billing</DropdownMenuItem>
-            <DropdownMenuItem>Team</DropdownMenuItem>
-            <DropdownMenuItem>Subscription</DropdownMenuItem>
+            <DropdownMenuItem>
+              <User />
+              My Profile
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <AlignVerticalJustifyEnd />
+              My Items
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <CircleHelp />
+              Help
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Unplug />
+              Disconnect
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </nav>

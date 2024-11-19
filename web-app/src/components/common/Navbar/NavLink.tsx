@@ -9,7 +9,9 @@ type NavLinkProps = {
 const NavLink = ({ label, href }: NavLinkProps) => {
   return (
     <Link href={href} className="transition-colors hover:text-primary">
-      <Button variant={"ghost"}>{label}</Button>
+      <Button variant={"ghost"} size={"sm"}>
+        {label}
+      </Button>
     </Link>
   );
 };
