@@ -17,11 +17,11 @@ import {
   User,
 } from "lucide-react";
 import { ThemeToggler } from "../ThemeToggler";
-import SearchNFTs from "../SearchNFTs";
+import { SearchModal } from "../SearchModal";
 const NavbarActions = () => {
   return (
     <div className="flex flex-1 items-center justify-end space-x-4">
-      <SearchNFTs />
+      <SearchModal />
       <nav className="flex items-center space-x-1">
         <ThemeToggler />
         <DropdownMenu modal={false}>
