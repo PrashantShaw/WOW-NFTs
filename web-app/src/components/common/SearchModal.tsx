@@ -4,7 +4,7 @@ import * as React from "react";
 import { Loader2, Search } from "lucide-react";
 
 import { cn, debounce } from "@/lib/utils";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -52,6 +52,7 @@ export function SearchModal() {
     try {
       const results = await debouncedFetchSearchResults(value);
       setSearchResults(results);
+      setSelectedIndex(results.length > 0 ? 0 : -1);
     } catch (error) {
       console.error("Error fetching search results:", error);
       setSearchResults([]);
@@ -64,21 +65,40 @@ export function SearchModal() {
     handleSearch(inputValue);
   }, [inputValue, handleSearch]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setSelectedIndex((prev) =>
-        prev < searchResults.length - 1 ? prev + 1 : prev
-      );
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setSelectedIndex((prev) => (prev > 0 ? prev - 1 : prev));
-    } else if (e.key === "Enter" && selectedIndex >= 0) {
-      e.preventDefault();
-      // Handle selection (e.g., navigate to result page)
-      console.log("Selected:", searchResults[selectedIndex]);
-    }
-  };
+  const handleKeyDownOnInput = React.useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setSelectedIndex((prev) =>
+          prev < searchResults.length - 1 ? prev + 1 : prev
+        );
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : prev));
+      } else if (e.key === "Enter" && selectedIndex >= 0) {
+        e.preventDefault();
+        // Handle selection (e.g., navigate to result page)
+        console.log("Pressed Enter on:", searchResults[selectedIndex]);
+      }
+    },
+    [searchResults, selectedIndex]
+  );
+  const handleMouseOverOnSearchResult = React.useCallback(
+    (e: React.MouseEvent) => {
+      const currIdx = Number(e.currentTarget.getAttribute("data-index") ?? -1);
+      setSelectedIndex(currIdx);
+      console.log("Mouse Over:", searchResults[currIdx]);
+    },
+    [searchResults]
+  );
+  const handleClickOnSearchResult = React.useCallback(
+    (e: React.MouseEvent) => {
+      const currIdx = Number(e.currentTarget.getAttribute("data-index") ?? -1);
+      setSelectedIndex(currIdx);
+      console.log("Clicked on:", searchResults[currIdx]);
+    },
+    [searchResults]
+  );
 
   return (
     <>
@@ -94,7 +114,7 @@ export function SearchModal() {
         </kbd>
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="p-0">
+        <DialogContent className="p-0" aria-describedby={undefined}>
           <div
             className="flex items-center border-b px-3"
             cmdk-input-wrapper=""
@@ -105,9 +125,10 @@ export function SearchModal() {
               placeholder="Type to search..."
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={handleKeyDown}
+              onKeyDown={handleKeyDownOnInput}
             />
           </div>
+          <DialogTitle className="hidden">Search Dialog</DialogTitle>
           <ScrollArea className="h-72">
             {isLoading ? (
               <div className="flex items-center justify-center py-6">
@@ -118,12 +139,15 @@ export function SearchModal() {
                 {searchResults.map((result, index) => (
                   <div
                     key={index}
+                    data-index={index}
                     className={cn(
-                      "cursor-default select-none rounded-sm px-2 py-1.5 text-sm outline-none",
+                      "cursor-pointer select-none rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
                       index === selectedIndex
                         ? "bg-accent text-accent-foreground"
                         : "text-foreground"
                     )}
+                    onMouseOver={handleMouseOverOnSearchResult}
+                    onClick={handleClickOnSearchResult}
                   >
                     {result}
                   </div>
