@@ -1,101 +1,112 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { BadgePlus } from "lucide-react";
-import React, { useRef } from "react";
-import { useDropzone } from "react-dropzone";
+import React from "react";
+import { z } from "zod";
+import { Dropzone } from "./Dropzone";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import clsx from "clsx";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
-function Dropzone(props: { required: boolean; name: string }) {
-  const { required, name } = props;
-
-  const hiddenInputRef = useRef<HTMLInputElement | null>(null);
-  const previewImageRef = useRef<HTMLImageElement | null>(null);
-
-  const { getRootProps, getInputProps, acceptedFiles } = useDropzone({
-    onDrop: (incomingFiles) => {
-      if (hiddenInputRef.current) {
-        // Note the specific way we need to munge the file into the hidden input//-
-        // https://stackoverflow.com/a/68182158/1068446//-
-        const dataTransfer = new DataTransfer();
-        incomingFiles.forEach((v) => {
-          dataTransfer.items.add(v);
-        });
-        hiddenInputRef.current.files = dataTransfer.files;
-      }
-    },
+const imageSchemaZ = z
+  .custom<FileList>(
+    (fileList) => fileList instanceof FileList && fileList.length > 0,
+    { message: "Image file is required!" }
+  )
+  .refine((fileList) => fileList[0]?.type.startsWith("image/"), {
+    message: "Selected Item is not an image!",
+  })
+  .refine((fileList) => fileList[0]?.size <= 5 * 1024 * 1024, {
+    message: "Max file size is 5MB",
   });
 
-  const selectedFiles = acceptedFiles.map((file) => {
-    const reader = new FileReader();
-    reader.onabort = () => console.log("file reading was aborted");
-    reader.onerror = () => console.log("file reading has failed");
-    reader.onload = () => {
-      const binaryStr = reader.result;
-      if (previewImageRef.current) {
-        previewImageRef.current.src = binaryStr as string;
-      }
-    };
-    reader.readAsDataURL(file);
-    return (
-      <div
-        key={file.path}
-        className="flex flex-col items-center justify-center gap-3"
-      >
-        <p className="text-center text-muted-foreground">
-          {file.name} - {file.size.toLocaleString()} bytes - {file.type}
-        </p>
-        <img ref={previewImageRef} src="/" alt="selected Image" />
-      </div>
-    );
-  });
+const nftSchemaZ = z.object({
+  image: imageSchemaZ,
+  itemName: z.string().min(1, { message: "Required!" }),
+  description: z.string().min(1, { message: "Required!" }),
+  website: z.string().min(1, { message: "Required!" }),
+  category: z.string().min(1, { message: "Required!" }),
+  // creatorId: z.coerce.number().min(1, { message: "creator Id is Required!" }),
+});
 
-  return (
-    <div className="">
-      <div
-        className="rounded-lg border-dashed border-4 p-10 cursor-pointer"
-        {...getRootProps()}
-      >
-        <input
-          type="file"
-          name={name}
-          required={required}
-          ref={hiddenInputRef}
-          className="hidden"
-          autoComplete="off"
-        />
-        <input {...getInputProps()} />
-        <div className="flex flex-col items-center gap-3 justify-center">
-          {selectedFiles}
-          <div className="flex items-center gap-3">
-            <BadgePlus className="text-muted-foreground" />
-            <p className="text-muted-foreground">
-              Drag n drop your NFT file here
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+type NftFormData = z.infer<typeof nftSchemaZ>;
 
 export const CreateNftForm = () => {
-  const NFT_FILE = "NFT_FILE";
+  const {
+    control,
+    handleSubmit,
+    // register,
+    // formState: { errors, isSubmitting },
+  } = useForm<NftFormData>({
+    resolver: zodResolver(nftSchemaZ),
+    defaultValues: {
+      itemName: "",
+      description: "",
+      image: undefined,
+    },
+  });
+  const onSubmitNftForm: SubmitHandler<NftFormData> = async (formData) => {
+    console.log("NFT formData :", formData);
+  };
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-
-        // Now get the form data as you regularly would
-        const formData = new FormData(e.currentTarget);
-        const file = formData.get(NFT_FILE) as File | null;
-        alert(file?.name);
-      }}
-    >
+    <form onSubmit={handleSubmit(onSubmitNftForm)}>
       <div className="grid md:grid-cols-2 gap-6">
-        <Dropzone name={NFT_FILE} required />
-        <div className="flex flex-col gap-4">
-          <Input />
+        <Dropzone name={"nftImage"} required />
+        <div className="flex flex-col gap-2">
+          <Controller
+            name={"itemName"}
+            control={control}
+            render={({ field, fieldState: { error } }) => (
+              <div className="relative mb-2">
+                <Label htmlFor="itemName">NFT name</Label>
+                <Input
+                  {...field}
+                  id="itemName"
+                  placeholder="What's on your mind? Let the world know.."
+                  className={clsx(
+                    " focus-visible:ring-2 focus-visible:ring-offset-0 resize-none",
+                    error
+                      ? "ring-2 ring-red-600  focus-visible:ring-red-600"
+                      : ""
+                  )}
+                />
+                {error ? (
+                  <p className="absolute top-[105%] right-0 text-xs text-red-600">
+                    {error.message}
+                  </p>
+                ) : null}
+              </div>
+            )}
+          />
+          <Controller
+            name={"description"}
+            control={control}
+            render={({ field, fieldState: { error } }) => (
+              <div className="relative mb-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  {...field}
+                  id="description"
+                  rows={3}
+                  placeholder="What's on your mind? Let the world know.."
+                  className={clsx(
+                    " focus-visible:ring-2 focus-visible:ring-offset-0 resize-none",
+                    error
+                      ? "ring-2 ring-red-600  focus-visible:ring-red-600"
+                      : ""
+                  )}
+                />
+                {error ? (
+                  <p className="absolute top-[105%] right-0 text-xs text-red-600">
+                    {error.message}
+                  </p>
+                ) : null}
+              </div>
+            )}
+          />
+          <div className="h-2" />
           <Button type="submit">Submit</Button>
         </div>
       </div>

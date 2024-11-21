@@ -10,7 +10,9 @@ const CreateNFTPage = () => {
         You can set preferred display name, create your profile URL and manage
         other personal settings.
       </p>
-      <CreateNftForm />
+      <div className="pt-10 border-t">
+        <CreateNftForm />
+      </div>
     </div>
   );
 };
