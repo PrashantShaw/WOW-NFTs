@@ -3,12 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import React from "react";
 import { z } from "zod";
-import { Dropzone } from "./Dropzone";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import clsx from "clsx";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { ImageFileInput } from "./ImageFileInput";
 
 const imageSchemaZ = z
   .custom<FileList>(
@@ -23,37 +23,46 @@ const imageSchemaZ = z
   });
 
 const nftSchemaZ = z.object({
-  image: imageSchemaZ,
+  nftImage: imageSchemaZ,
   itemName: z.string().min(1, { message: "Required!" }),
-  description: z.string().min(1, { message: "Required!" }),
-  website: z.string().min(1, { message: "Required!" }),
+  description: z
+    .string()
+    .min(1, { message: "Required!" })
+    .max(180, { message: "Max 180 characters allowed!" }),
+  website: z.string().min(1, { message: "Required!" }).url(),
   category: z.string().min(1, { message: "Required!" }),
   // creatorId: z.coerce.number().min(1, { message: "creator Id is Required!" }),
 });
 
-type NftFormData = z.infer<typeof nftSchemaZ>;
+export type NftFormData = z.infer<typeof nftSchemaZ>;
+// type NftFormFieldNames = keyof NftFormData;
 
 export const CreateNftForm = () => {
   const {
     control,
     handleSubmit,
-    // register,
-    // formState: { errors, isSubmitting },
+    register,
+    formState: { errors },
   } = useForm<NftFormData>({
     resolver: zodResolver(nftSchemaZ),
     defaultValues: {
       itemName: "",
       description: "",
-      image: undefined,
+      nftImage: undefined,
     },
   });
+
+  console.log("form image errro:", errors);
   const onSubmitNftForm: SubmitHandler<NftFormData> = async (formData) => {
     console.log("NFT formData :", formData);
   };
   return (
     <form onSubmit={handleSubmit(onSubmitNftForm)}>
       <div className="grid md:grid-cols-2 gap-6">
-        <Dropzone name={"nftImage"} required />
+        <ImageFileInput<NftFormData>
+          fieldName={"nftImage"}
+          register={register}
+        />
         <div className="flex flex-col gap-2">
           <Controller
             name={"itemName"}

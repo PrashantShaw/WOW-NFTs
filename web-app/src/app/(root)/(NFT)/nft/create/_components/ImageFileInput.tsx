@@ -1,48 +1,42 @@
 /* eslint-disable @next/next/no-img-element */
+"use client";
 import { ArrowDownUp, ImageOff, ImagePlus } from "lucide-react";
-import { useRef } from "react";
-import { useDropzone } from "react-dropzone";
+import { ChangeEvent, useCallback, useMemo, useRef, useState } from "react";
+import { FieldValues, Path, UseFormRegister } from "react-hook-form";
 
-export function Dropzone(props: { required: boolean; name: string }) {
-  const { name } = props;
+type ImageFileInputProps<FormDataType extends FieldValues> = {
+  register: UseFormRegister<FormDataType>;
+  fieldName: string;
+};
+const ImageFileInput = <FormDataType extends FieldValues>({
+  fieldName,
+  register,
+}: ImageFileInputProps<FormDataType>) => {
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const {
+    ref: registerRef,
+    onChange: registerOnChange,
+    ...props
+  } = register(fieldName as Path<FormDataType>);
 
   const hiddenInputRef = useRef<HTMLInputElement | null>(null);
-  const previewImageRef = useRef<HTMLImageElement | null>(null);
 
-  const { getRootProps, getInputProps, acceptedFiles } = useDropzone({
-    onDrop: (incomingFiles) => {
-      if (hiddenInputRef.current) {
-        const dataTransfer = new DataTransfer();
-        incomingFiles.forEach((v) => {
-          dataTransfer.items.add(v);
-        });
-        hiddenInputRef.current.files = dataTransfer.files;
-      }
-    },
-  });
+  const selectedFiles = useMemo(() => {
+    if (!imageFile) return null;
 
-  const selectedFiles = acceptedFiles.map((file) => {
-    const reader = new FileReader();
-    reader.onabort = () => console.log("file reading was aborted");
-    reader.onerror = () => console.log("file reading has failed");
-    reader.onload = () => {
-      const binaryStr = reader.result;
-      if (previewImageRef.current) {
-        previewImageRef.current.src = binaryStr as string;
-      }
-    };
-    reader.readAsDataURL(file);
+    const urlImage = URL.createObjectURL(imageFile);
 
     return (
       <div
-        key={file.path}
+        key={imageFile.name}
         className="flex flex-col items-center justify-center gap-3"
       >
         <p className="text-center text-muted-foreground">
-          {file.name} - {file.size.toLocaleString()} bytes - {file.type}
+          {imageFile.name} - {imageFile.size.toLocaleString()} bytes -{" "}
+          {imageFile.type}
         </p>
-        {file.type.startsWith("image/") ? (
-          <img ref={previewImageRef} src="/" alt="selected Image" />
+        {imageFile.type.startsWith("image/") ? (
+          <img src={urlImage} alt="selected Image" />
         ) : (
           <p className="text-red-500 text-sm flex items-center gap-1">
             <ImageOff strokeWidth={1} size={20} />
@@ -51,32 +45,49 @@ export function Dropzone(props: { required: boolean; name: string }) {
         )}
       </div>
     );
-  });
+  }, [imageFile]);
+
+  const handleUploadFile = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const file = event.currentTarget.files?.[0];
+
+      if (!file) return;
+
+      setImageFile(file);
+      registerOnChange(event);
+    },
+    [registerOnChange]
+  );
 
   return (
     <div className="">
       <div
         className="rounded-lg border-dashed border-2 p-10 cursor-pointer h-full flex flex-col items-center gap-3 justify-center"
-        {...getRootProps()}
+        onClick={() => hiddenInputRef.current?.click()}
       >
         <input
           type="file"
-          name={name}
-          ref={hiddenInputRef}
+          ref={(e) => {
+            registerRef(e);
+            hiddenInputRef.current = e;
+          }}
+          onChange={handleUploadFile}
+          accept="image/*"
           className="hidden"
+          multiple={false}
           autoComplete="off"
+          {...props}
         />
-        <input {...getInputProps({ accept: "image/*" })} />
         <div className="">
           {selectedFiles}
-          {acceptedFiles.length === 0 ? (
+          {imageFile === null ? (
             <div className="flex flex-col justify-center items-center gap-0">
               <ImagePlus
                 className="text-muted-foreground w-10 h-10"
                 strokeWidth={1}
               />
               <p className="text-muted-foreground text-lg pt-2">
-                Drag n drop your NFT image here
+                Upload your NFT image here
               </p>
               <p className="text-muted-foreground text-sm">
                 PNG, JPG, GIF, WEBP, ICO upto 3 MB
@@ -92,4 +103,6 @@ export function Dropzone(props: { required: boolean; name: string }) {
       </div>
     </div>
   );
-}
+};
+
+export { ImageFileInput };
