@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { ThemeProvider } from "./ThemeProvider";
+import { Providers } from "./Providers";
 import { Inter } from "next/font/google";
+import { cookieToInitialState } from "wagmi";
+import { getConfig } from "./wagmi";
+import { headers } from "next/headers";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -15,17 +18,14 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const initialState = cookieToInitialState(
+    getConfig(),
+    headers().get("cookie")
+  );
   return (
     <html lang="en">
       <body className={`${inter.className} antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-        </ThemeProvider>
+        <Providers initialState={initialState}>{children}</Providers>
       </body>
     </html>
   );

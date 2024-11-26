@@ -24,6 +24,7 @@ const NavbarActions = () => {
       <SearchModal />
       <nav className="flex items-center space-x-1">
         <ThemeToggler />
+        {/* Notification */}
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon">
@@ -40,7 +41,7 @@ const NavbarActions = () => {
             <DropdownMenuItem>Subscription</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-
+        {/* Avatar */}
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Avatar>

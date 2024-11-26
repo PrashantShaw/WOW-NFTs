@@ -1,16 +1,24 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
-import { ArrowDownUp, ImageOff, ImagePlus } from "lucide-react";
+import clsx from "clsx";
+import { ImageOff, ImagePlus, RefreshCcw } from "lucide-react";
 import { ChangeEvent, useCallback, useMemo, useRef, useState } from "react";
-import { FieldValues, Path, UseFormRegister } from "react-hook-form";
+import {
+  FieldError,
+  FieldValues,
+  Path,
+  UseFormRegister,
+} from "react-hook-form";
 
 type ImageFileInputProps<FormDataType extends FieldValues> = {
   register: UseFormRegister<FormDataType>;
   fieldName: string;
+  error: FieldError | undefined;
 };
 const ImageFileInput = <FormDataType extends FieldValues>({
   fieldName,
   register,
+  error,
 }: ImageFileInputProps<FormDataType>) => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const {
@@ -62,7 +70,10 @@ const ImageFileInput = <FormDataType extends FieldValues>({
   return (
     <div className="">
       <div
-        className="rounded-lg border-dashed border-2 p-10 cursor-pointer h-full flex flex-col items-center gap-3 justify-center"
+        className={clsx(
+          "rounded-lg border-dashed border-2 p-10 cursor-pointer h-full flex flex-col items-center gap-3 justify-center",
+          error ? "bg-destructive/5 border-destructive" : ""
+        )}
         onClick={() => hiddenInputRef.current?.click()}
       >
         <input
@@ -95,10 +106,15 @@ const ImageFileInput = <FormDataType extends FieldValues>({
             </div>
           ) : (
             <div className="flex items-center justify-center gap-2 pt-6">
-              <ArrowDownUp className="text-muted-foreground" />
+              <RefreshCcw className="text-muted-foreground" />
               <p className="text-muted-foreground text-lg">Change Image</p>
             </div>
           )}
+          {error ? (
+            <p className="text-center text-sm font-semibold text-destructive">
+              {error.message}
+            </p>
+          ) : null}
         </div>
       </div>
     </div>

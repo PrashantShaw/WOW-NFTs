@@ -70,6 +70,7 @@ export const CreateNftForm = () => {
         <ImageFileInput<NftFormData>
           fieldName={"nftImage"}
           register={register}
+          error={errors.nftImage}
         />
         <div className="flex flex-col gap-2">
           <Controller
