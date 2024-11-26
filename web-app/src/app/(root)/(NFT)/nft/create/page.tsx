@@ -1,7 +1,7 @@
 import React from "react";
 import { CreateNftForm } from "./_components/CreateNftForm";
 
-// TODO: visit - https://www.youtube.com/watch?v=XTb-34rcuN4&t=7924s | implement react-dropzone
+// TODO: visit - https://www.youtube.com/watch?v=XTb-34rcuN4&t=7924s
 const CreateNFTPage = () => {
   return (
     <div className="pt-[2.5rem]">
