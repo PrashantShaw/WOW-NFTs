@@ -24,6 +24,7 @@ const NavbarActions = () => {
       <SearchModal />
       <nav className="flex items-center space-x-1">
         <ThemeToggler />
+        {/* TODO: add connect wallet button for non connected users */}
         {/* Notification */}
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>

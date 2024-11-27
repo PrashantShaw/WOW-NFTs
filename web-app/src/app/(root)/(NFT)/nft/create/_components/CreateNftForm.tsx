@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import toast from "react-hot-toast";
 
 const imageSchemaZ = z
   .custom<FileList>(
@@ -61,12 +62,27 @@ export const CreateNftForm = () => {
 
   console.log("form image errro:", errors);
   const onSubmitNftForm: SubmitHandler<NftFormData> = async (formData) => {
-    console.log("NFT formData :", formData);
+    try {
+      console.log("NFT formData :", formData);
+      const imageData = new FormData();
+      imageData.set("nftImage", formData.nftImage[0]);
+      const uploadRequest = await fetch("/api/nft-file", {
+        method: "POST",
+        body: imageData,
+      });
+      const ipfsUrl = await uploadRequest.json();
+      console.log("ipfsUrl :", ipfsUrl);
+    } catch (error: unknown | Error) {
+      console.log("Error create nft!", error);
+      toast.error("Failed to create NFT!", {
+        duration: 5000,
+        position: "bottom-right",
+      });
+    }
   };
   return (
     <form onSubmit={handleSubmit(onSubmitNftForm)}>
       <div className="grid md:grid-cols-2 gap-6">
-        {/* TODO: add validation error to ImageFileInput */}
         <ImageFileInput<NftFormData>
           fieldName={"nftImage"}
           register={register}

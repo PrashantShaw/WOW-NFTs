@@ -1,3 +1,4 @@
+import { NFT_ABI } from "@/abi/NFTMarketplace";
 import { mainnet, sepolia } from "viem/chains";
 
 export const NAV_LINKS = [
@@ -22,5 +23,5 @@ export const LOCALSTORAGE_KEYS = {
 
 export const NFT_CONTRACT_CONFIG = {
   address: NFT_CONTRACT_ADDRESS,
-  abi: "NFT_ABI", // TODO: replace with actual abi
+  abi: NFT_ABI,
 } as const;
