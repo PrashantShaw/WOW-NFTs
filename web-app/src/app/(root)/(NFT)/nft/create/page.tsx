@@ -1,7 +1,7 @@
 import React from "react";
 import { CreateNftForm } from "./_components/CreateNftForm";
 
-// TODO: visit - https://www.youtube.com/watch?v=XTb-34rcuN4&t=15737s
+// TODO: visit - https://www.youtube.com/watch?v=XTb-34rcuN4&t=18900s
 const CreateNFTPage = () => {
   return (
     <div className="pt-[2.5rem]">

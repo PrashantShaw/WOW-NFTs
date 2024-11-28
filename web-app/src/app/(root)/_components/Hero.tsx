@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Library } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 // TODO: visit part 1 starting and see how things work - https://www.youtube.com/watch?v=Uuwi2vNmMj0&t=1s
@@ -14,10 +14,10 @@ const Hero = () => {
           Discover the most outstanding NFTs in all topics of life. Create your
           own NFTs and sell them!
         </p>
-        <Link href={"/nft/create"}>
-          <Button className="text-lg font-semibold ">
-            Create
-            <Plus strokeWidth={4} />
+        <Link href={"/nft/collections"}>
+          <Button className="text-lg font-medium ">
+            Collections
+            <Library strokeWidth={3} />
           </Button>
         </Link>
       </div>

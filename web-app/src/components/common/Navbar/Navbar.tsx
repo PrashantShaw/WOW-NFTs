@@ -5,11 +5,10 @@ import Link from "next/link";
 
 import { cn } from "@/lib/utils";
 
-import { NAV_LINKS } from "@/lib/constants";
-import NavLink from "./NavLink";
 import SideNavSheet from "./SideNavSheet";
 import NavbarActions from "./NavbarActions";
 import { Sparkles } from "lucide-react";
+import { SearchModal } from "../SearchModal";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = React.useState(false);
@@ -37,11 +36,12 @@ export default function Navbar() {
               NFT Market
             </span>
           </Link>
-          <nav className="flex items-center space-x-0 text-sm font-medium">
+          {/* <nav className="flex items-center space-x-0 text-sm font-medium">
             {NAV_LINKS.map(({ label, href }, idx) => (
               <NavLink key={idx} label={label} href={href} />
             ))}
-          </nav>
+          </nav> */}
+          <SearchModal />
         </div>
         <SideNavSheet />
         <NavbarActions />
