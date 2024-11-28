@@ -1,3 +1,4 @@
+import { hardhat_localhost } from "@/lib/constants";
 import {
   http,
   cookieStorage,
@@ -10,13 +11,15 @@ import { injected } from "wagmi/connectors";
 
 const INFURA_API_KEY = process.env.NEXT_PUBLIC_INFURA_API_KEY || "";
 const SEPOLIA_INFURA_RPC_ENDPOINT = `https://sepolia.infura.io/v3/${INFURA_API_KEY}`;
+const HARDHAT_LOCALHOST_RPC_ENDPOINT = "http://127.0.0.1:8545";
 
-const chains = [sepolia, mainnet] as const;
+const chains = [sepolia, mainnet, hardhat_localhost] as const;
 const connectors = [injected()];
 const storage = createStorage({ storage: cookieStorage || localStorage });
 const transports = {
   [mainnet.id]: http(),
   [sepolia.id]: http(SEPOLIA_INFURA_RPC_ENDPOINT),
+  [hardhat_localhost.id]: http(HARDHAT_LOCALHOST_RPC_ENDPOINT),
 };
 
 let config: Config;

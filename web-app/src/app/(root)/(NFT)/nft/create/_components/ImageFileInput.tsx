@@ -101,7 +101,7 @@ const ImageFileInput = <FormDataType extends FieldValues>({
                 Upload your NFT image here
               </p>
               <p className="text-muted-foreground text-sm">
-                PNG, JPG, GIF, WEBP, ICO upto 3 MB
+                PNG, JPG, GIF, WEBP, ICO upto 10 MB
               </p>
             </div>
           ) : (

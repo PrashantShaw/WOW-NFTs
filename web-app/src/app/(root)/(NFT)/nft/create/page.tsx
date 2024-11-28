@@ -1,8 +1,8 @@
 import React from "react";
 import { CreateNftForm } from "./_components/CreateNftForm";
 
-// TODO: visit - https://www.youtube.com/watch?v=XTb-34rcuN4&t=18900s
-const CreateNFTPage = () => {
+// TODO: visit - https://www.youtube.com/watch?v=XTb-34rcuN4&t=20892s
+const CreateNFTPage = async () => {
   return (
     <div className="pt-[2.5rem]">
       <h1 className="text-5xl font-bold mb-4">Create New Item</h1>

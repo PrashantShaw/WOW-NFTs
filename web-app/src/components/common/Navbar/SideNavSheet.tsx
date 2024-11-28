@@ -10,6 +10,7 @@ import {
 import { NAV_LINKS } from "@/lib/constants";
 import { Menu, Sparkles } from "lucide-react";
 import Link from "next/link";
+// TODO: replace sidenav links with something better
 const SideNavSheet = () => {
   return (
     <Sheet>

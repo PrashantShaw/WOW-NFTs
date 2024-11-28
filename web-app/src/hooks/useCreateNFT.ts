@@ -1,22 +1,25 @@
 "use client";
-import { LOCALSTORAGE_KEYS, NFT_CONTRACT_CONFIG } from "@/lib/constants";
+import {
+  // LOCALSTORAGE_KEYS,
+  NFT_CONTRACT_CONFIG,
+} from "@/lib/constants";
 import { useCallback, useState } from "react";
 import { useWriteContract } from "wagmi";
-import { QueryKey, useQueryClient } from "@tanstack/react-query";
+// import { QueryKey, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { getRequiredEthChain } from "@/lib/utils";
 import { waitForTransactionReceipt } from "@wagmi/core";
 import { type WriteContractErrorType } from "@wagmi/core";
 import { type WaitForTransactionReceiptErrorType } from "@wagmi/core";
 import { getConfig } from "@/app/wagmi";
-import useLocalStorage from "./useLocalStorage";
+// import useLocalStorage from "./useLocalStorage";
 import { useDataAccessLayer } from "./useDataAccessLayer";
 
 const useCreateNFT = () => {
   const [isPending, setIsPending] = useState(false);
   const { id: requiredChainId } = getRequiredEthChain();
-  const { getItem } = useLocalStorage();
-  const queryClient = useQueryClient();
+  // const { getItem } = useLocalStorage();
+  // const queryClient = useQueryClient();
   const { writeContractAsync } = useWriteContract();
   const { verifyAllChecks } = useDataAccessLayer();
 
@@ -39,13 +42,13 @@ const useCreateNFT = () => {
           hash,
           chainId: requiredChainId,
         });
-        const getAllTweetsQueryKey: QueryKey | undefined = getItem(
-          LOCALSTORAGE_KEYS.getAllTweetsQueryKey
-        );
-        queryClient.invalidateQueries({ queryKey: getAllTweetsQueryKey });
+        // const getAllTweetsQueryKey: QueryKey | undefined = getItem(
+        //   LOCALSTORAGE_KEYS.getAllTweetsQueryKey
+        // );
+        // queryClient.invalidateQueries({ queryKey: getAllTweetsQueryKey });
         // optionally, u can fetch event which is emitted when tweet is created using 'useWatchContractEvent' hook
         success = true;
-        toast.success("Tweet Created!", {
+        toast.success("NFT Created!", {
           position: "bottom-center",
           duration: 3000,
         });
@@ -65,7 +68,12 @@ const useCreateNFT = () => {
 
       return { success };
     },
-    [verifyAllChecks, writeContractAsync, requiredChainId, getItem, queryClient]
+    [
+      verifyAllChecks,
+      writeContractAsync,
+      requiredChainId,
+      // getItem, queryClient
+    ]
   );
 
   return {

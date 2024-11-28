@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { z } from "zod";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import toast from "react-hot-toast";
+import { getEthFromWei, getListingPrice } from "@/lib/utils";
 
 const imageSchemaZ = z
   .custom<FileList>(
@@ -27,7 +28,7 @@ const imageSchemaZ = z
     message: "Selected Item is not an image!",
   })
   .refine((fileList) => fileList[0]?.size <= 5 * 1024 * 1024, {
-    message: "Max file size is 5MB",
+    message: "Max file size is 10MB",
   });
 
 const nftSchemaZ = z.object({
@@ -39,7 +40,9 @@ const nftSchemaZ = z.object({
     .max(180, { message: "Max 180 characters allowed!" }),
   website: z.string().min(1, { message: "Required!" }).url(),
   category: z.string().min(1, { message: "Required!" }),
-  // creatorId: z.coerce.number().min(1, { message: "creator Id is Required!" }),
+  price: z.coerce
+    .number({ message: "Not a number" })
+    .gt(0, { message: "Must be a positive value!" }),
 });
 
 export type NftFormData = z.infer<typeof nftSchemaZ>;
@@ -57,21 +60,38 @@ export const CreateNftForm = () => {
       itemName: "",
       description: "",
       nftImage: undefined,
+      category: "",
+      website: "",
     },
   });
+  const [listingPriceEth, setListingPriceEth] = useState(0);
+
+  useEffect(() => {
+    (async () => {
+      const listingPriceWei = await getListingPrice();
+      const listingPriceEth = getEthFromWei(listingPriceWei);
+      setListingPriceEth(listingPriceEth);
+    })();
+  }, []);
 
   console.log("form image errro:", errors);
   const onSubmitNftForm: SubmitHandler<NftFormData> = async (formData) => {
     try {
-      console.log("NFT formData :", formData);
-      const imageData = new FormData();
-      imageData.set("nftImage", formData.nftImage[0]);
-      const uploadRequest = await fetch("/api/nft-file", {
-        method: "POST",
-        body: imageData,
-      });
-      const ipfsUrl = await uploadRequest.json();
-      console.log("ipfsUrl :", ipfsUrl);
+      if (formData.price < listingPriceEth) {
+        toast.error("Price must be great than or equal to the listing price!", {
+          duration: 5000,
+          position: "bottom-right",
+        });
+      }
+      console.log("NFT formData :", formData, listingPriceEth);
+      // const imageData = new FormData();
+      // imageData.set("nftImage", formData.nftImage[0]);
+      // const uploadRequest = await fetch("/api/nft-file", {
+      //   method: "POST",
+      //   body: imageData,
+      // });
+      // const ipfsUrl = await uploadRequest.json();
+      // console.log("ipfsUrl :", ipfsUrl);
     } catch (error: unknown | Error) {
       console.log("Error create nft!", error);
       toast.error("Failed to create NFT!", {
@@ -185,6 +205,42 @@ export const CreateNftForm = () => {
             )}
           />
           <Controller
+            name={"price"}
+            control={control}
+            render={({ field, fieldState: { error } }) => (
+              <div className="relative mb-2">
+                <Label htmlFor="price">
+                  Price{" "}
+                  <span className="text-muted-foreground text-sm">(ETH)</span>{" "}
+                </Label>
+                <Input
+                  {...field}
+                  id="price"
+                  type="number"
+                  placeholder="Set a selling price for this NFT"
+                  className={clsx(
+                    " focus-visible:ring-2 focus-visible:ring-offset-0 resize-none",
+                    error
+                      ? "ring-2 ring-red-600  focus-visible:ring-red-600"
+                      : ""
+                  )}
+                />
+                <p className="text-xs pt-1 text-muted-foreground m-0">
+                  Price should be greate than{" "}
+                  <span className="font-bold text-violet-500">
+                    {listingPriceEth} ETH
+                  </span>{" "}
+                  (Listing Price).
+                </p>
+                {error ? (
+                  <p className="absolute top-[105%] right-0 text-xs text-red-600">
+                    {error.message}
+                  </p>
+                ) : null}
+              </div>
+            )}
+          />
+          <Controller
             name={"description"}
             control={control}
             render={({ field, fieldState: { error } }) => (
@@ -212,7 +268,12 @@ export const CreateNftForm = () => {
           />
 
           <div className="h-2" />
-          <Button type="submit">Submit</Button>
+          <div className="grid grid-cols-2 gap-4">
+            <Button type="submit">Create</Button>
+            <Button type="button" variant={"secondary"}>
+              Preview
+            </Button>
+          </div>
         </div>
       </div>
     </form>

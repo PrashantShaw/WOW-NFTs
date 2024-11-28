@@ -1,7 +1,9 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { ETH_CHAINS } from "./constants";
+import { ETH_CHAINS, NFT_CONTRACT_CONFIG } from "./constants";
 import { ETH_NETWORKS, NFT, RawNFT } from "./definitions";
+import { readContract } from "@wagmi/core";
+import { getConfig } from "@/app/wagmi";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -41,3 +43,20 @@ export const parseNFT = (rawNFT: RawNFT): NFT => ({
   price: rawNFT.price.toString(),
   sold: rawNFT.sold,
 });
+
+export const getListingPrice = async () => {
+  const listingPrice = await readContract(getConfig(), {
+    abi: NFT_CONTRACT_CONFIG.abi,
+    address: NFT_CONTRACT_CONFIG.address,
+    functionName: "getListingPrice",
+  });
+
+  return Number(listingPrice);
+};
+
+export const getEthFromWei = (wei: number) => {
+  const WEI_IN_ONE_ETH = 10 ** 18;
+  const ETH_FROM_WEI = wei / WEI_IN_ONE_ETH;
+
+  return ETH_FROM_WEI;
+};
