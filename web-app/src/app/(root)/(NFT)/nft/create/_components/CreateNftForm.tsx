@@ -76,6 +76,7 @@ export const CreateNftForm = () => {
 
   console.log("form image errro:", errors);
   const onSubmitNftForm: SubmitHandler<NftFormData> = async (formData) => {
+    const { nftImage, itemName, description, website, category } = formData;
     try {
       if (formData.price < listingPriceEth) {
         toast.error("Price must be great than or equal to the listing price!", {
@@ -84,14 +85,18 @@ export const CreateNftForm = () => {
         });
       }
       console.log("NFT formData :", formData, listingPriceEth);
-      // const imageData = new FormData();
-      // imageData.set("nftImage", formData.nftImage[0]);
-      // const uploadRequest = await fetch("/api/nft-file", {
-      //   method: "POST",
-      //   body: imageData,
-      // });
-      // const ipfsUrl = await uploadRequest.json();
-      // console.log("ipfsUrl :", ipfsUrl);
+      const imageData = new FormData();
+      imageData.append("nftImage", nftImage[0]);
+      imageData.append("itemName", itemName);
+      imageData.append("description", description);
+      imageData.append("website", website);
+      imageData.append("category", category);
+      const uploadRequest = await fetch("/api/nft-file", {
+        method: "POST",
+        body: imageData,
+      });
+      const data = await uploadRequest.json();
+      console.log("Upload data :", data);
     } catch (error: unknown | Error) {
       console.log("Error create nft!", error);
       toast.error("Failed to create NFT!", {

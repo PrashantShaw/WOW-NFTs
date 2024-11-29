@@ -1,13 +1,35 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { pinata } from "@/lib/pinata";
+import { PINATA_FILE_METADATA_NAME } from "@/lib/constants";
 
 export async function POST(request: NextRequest) {
   try {
     const data = await request.formData();
     const file: File | null = data.get("nftImage") as unknown as File;
-    const uploadData = await pinata.upload.file(file);
+    const itemName = data.get("itemName") as string;
+    const description = data.get("description") as string;
+    const category = data.get("category") as string;
+    const website = data.get("website") as string;
+
+    console.log(file, itemName, description, category, website);
+
+    const uploadData = await pinata.upload.file(file, {
+      metadata: {
+        name: PINATA_FILE_METADATA_NAME,
+        keyValues: {
+          itemName,
+          description,
+          category,
+          website,
+        },
+      },
+    });
     const url = await pinata.gateways.convert(uploadData.IpfsHash);
-    return NextResponse.json(url, { status: 200 });
+    console.log("from route handler nft-file ::", uploadData, url);
+    return NextResponse.json(
+      { url, ipfsHash: uploadData.IpfsHash },
+      { status: 200 }
+    );
   } catch (e) {
     console.log(e);
     return NextResponse.json(

@@ -14,7 +14,8 @@ export const NFT_CONTRACT_ADDRESS = process.env
 
 export const LOCALSTORAGE_KEYS = {
   isUserRegistered: "isUserRegistered",
-  getAllTweetsQueryKey: "getAllTweetsQueryKey",
+  getUnsoldNFTs: "getUnsoldNFTs",
+  pinataFilesMetadata: "pinataFilesMetadata",
 } as const;
 
 export const NFT_CONTRACT_CONFIG = {
@@ -40,3 +41,5 @@ export const ETH_CHAINS = {
   mainnet,
   hardhat_localhost,
 } as const;
+
+export const PINATA_FILE_METADATA_NAME = "NFTMARKETPLACE_PINATA";

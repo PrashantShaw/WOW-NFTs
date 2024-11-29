@@ -17,3 +17,8 @@ export type NFT = {
   price: string;
   sold: boolean;
 };
+
+export type NFTFileUploadResponseData = {
+  IpfsHash: string;
+  url: string;
+};
