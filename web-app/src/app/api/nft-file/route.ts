@@ -24,10 +24,10 @@ export async function POST(request: NextRequest) {
         },
       },
     });
-    const url = await pinata.gateways.convert(uploadData.IpfsHash);
-    console.log("from route handler nft-file ::", uploadData, url);
+    // const url = await pinata.gateways.convert(uploadData.IpfsHash);
+    console.log("from route handler nft-file ::", uploadData);
     return NextResponse.json(
-      { url, ipfsHash: uploadData.IpfsHash },
+      { ipfsHash: uploadData.IpfsHash, isDuplicate: uploadData.isDuplicate },
       { status: 200 }
     );
   } catch (e) {

@@ -29,6 +29,14 @@ contract NFTMarketplace is ERC721URIStorage {
         uint256 price;
         bool sold;
     }
+    struct MarketItemWithURI {
+        uint256 tokenId;
+        address payable seller;
+        address payable owner;
+        uint256 price;
+        bool sold;
+        string tokenURI;
+    }
 
     event idMarketItemCreated(
         uint256 indexed tokenId,
@@ -152,21 +160,35 @@ contract NFTMarketplace is ERC721URIStorage {
         payable(owner).transfer(listingPrice); // incentive for marketplace owner when token is sold
         payable(idMartketItem[tokenId].seller).transfer(msg.value); //seller gets the price value
     }
-
+    // TODO: compile the contract again and add the abi
     // GET ALL UNSOLD NFT DATA
-    function fetchUnsoldMarketItem() public view returns (MarketItem[] memory) {
+    function fetchUnsoldMarketItem()
+        public
+        view
+        returns (MarketItemWithURI[] memory)
+    {
         uint256 totalItems = _tokenIds.current();
         uint256 unsoldItemCount = totalItems - _itemsSold.current();
         uint256 currIdx = 0;
 
-        MarketItem[] memory items = new MarketItem[](unsoldItemCount);
+        MarketItemWithURI[] memory items = new MarketItemWithURI[](
+            unsoldItemCount
+        );
 
-        for (uint256 i = 1; i <= totalItems; i++) {
+        for (uint256 tokenId = 1; tokenId <= totalItems; tokenId++) {
             if (
-                idMartketItem[i].sold == false &&
-                idMartketItem[i].owner == address(this)
+                idMartketItem[tokenId].sold == false &&
+                idMartketItem[tokenId].owner == address(this)
             ) {
-                items[currIdx] = idMartketItem[i]; // 'i' is the tokenId here, bcoz its an incremental integer from 1
+                MarketItem storage item = idMartketItem[tokenId];
+                items[currIdx] = MarketItemWithURI({
+                    tokenId: item.tokenId,
+                    seller: item.seller,
+                    owner: item.owner,
+                    price: item.price,
+                    sold: item.sold,
+                    tokenURI: tokenURI(item.tokenId)
+                });
                 currIdx++;
             }
         }
@@ -178,23 +200,33 @@ contract NFTMarketplace is ERC721URIStorage {
     function fetchPurchasedNFTsByUser()
         public
         view
-        returns (MarketItem[] memory)
+        returns (MarketItemWithURI[] memory)
     {
         uint256 totalItems = _tokenIds.current();
         uint PurchasedNFTsByUserCount = 0;
         uint currIdx = 0;
 
-        for (uint256 i = 1; i <= totalItems; i++) {
-            if (idMartketItem[i].owner == msg.sender) {
+        for (uint256 tokenId = 1; tokenId <= totalItems; tokenId++) {
+            if (idMartketItem[tokenId].owner == msg.sender) {
                 PurchasedNFTsByUserCount++;
             }
         }
 
-        MarketItem[] memory items = new MarketItem[](PurchasedNFTsByUserCount);
+        MarketItemWithURI[] memory items = new MarketItemWithURI[](
+            PurchasedNFTsByUserCount
+        );
 
-        for (uint256 i = 1; i <= totalItems; i++) {
-            if (idMartketItem[i].owner == msg.sender) {
-                items[currIdx] = idMartketItem[i];
+        for (uint256 tokenId = 1; tokenId <= totalItems; tokenId++) {
+            if (idMartketItem[tokenId].owner == msg.sender) {
+                MarketItem storage item = idMartketItem[tokenId];
+                items[currIdx] = MarketItemWithURI({
+                    tokenId: item.tokenId,
+                    seller: item.seller,
+                    owner: item.owner,
+                    price: item.price,
+                    sold: item.sold,
+                    tokenURI: tokenURI(item.tokenId)
+                });
                 currIdx++;
             }
         }
@@ -203,22 +235,36 @@ contract NFTMarketplace is ERC721URIStorage {
     }
 
     // GET LISTED NFTS BY A USER
-    function fetchListedNFTsByUser() public view returns (MarketItem[] memory) {
+    function fetchListedNFTsByUser()
+        public
+        view
+        returns (MarketItemWithURI[] memory)
+    {
         uint256 totalItems = _tokenIds.current();
         uint listedNFTsByUserCount = 0;
         uint currIdx = 0;
 
-        for (uint256 i = 1; i <= totalItems; i++) {
-            if (idMartketItem[i].seller == msg.sender) {
+        for (uint256 tokenId = 1; tokenId <= totalItems; tokenId++) {
+            if (idMartketItem[tokenId].seller == msg.sender) {
                 listedNFTsByUserCount++;
             }
         }
 
-        MarketItem[] memory items = new MarketItem[](listedNFTsByUserCount);
+        MarketItemWithURI[] memory items = new MarketItemWithURI[](
+            listedNFTsByUserCount
+        );
 
-        for (uint256 i = 1; i <= totalItems; i++) {
-            if (idMartketItem[i].owner == msg.sender) {
-                items[currIdx] = idMartketItem[i];
+        for (uint256 tokenId = 1; tokenId <= totalItems; tokenId++) {
+            if (idMartketItem[tokenId].owner == msg.sender) {
+                MarketItem storage item = idMartketItem[tokenId];
+                items[currIdx] = MarketItemWithURI({
+                    tokenId: item.tokenId,
+                    seller: item.seller,
+                    owner: item.owner,
+                    price: item.price,
+                    sold: item.sold,
+                    tokenURI: tokenURI(item.tokenId)
+                });
                 currIdx++;
             }
         }

@@ -18,6 +18,9 @@ import {
 } from "@/components/ui/select";
 import toast from "react-hot-toast";
 import { getEthFromWei, getListingPrice } from "@/lib/utils";
+import useCreateNFT from "@/hooks/useCreateNFT";
+import { useRouter } from "next/navigation";
+import { LoaderCircle } from "lucide-react";
 
 const imageSchemaZ = z
   .custom<FileList>(
@@ -41,9 +44,17 @@ const nftSchemaZ = z.object({
   website: z.string().min(1, { message: "Required!" }).url(),
   category: z.string().min(1, { message: "Required!" }),
   price: z.coerce
-    .number({ message: "Not a number" })
+    .number({ message: "Not a number!" })
     .gt(0, { message: "Must be a positive value!" }),
 });
+
+const defaultValues = {
+  itemName: "",
+  description: "",
+  nftImage: undefined,
+  category: "",
+  website: "",
+};
 
 export type NftFormData = z.infer<typeof nftSchemaZ>;
 // type NftFormFieldNames = keyof NftFormData;
@@ -54,51 +65,47 @@ export const CreateNftForm = () => {
     handleSubmit,
     register,
     formState: { errors },
+    setError,
   } = useForm<NftFormData>({
     resolver: zodResolver(nftSchemaZ),
-    defaultValues: {
-      itemName: "",
-      description: "",
-      nftImage: undefined,
-      category: "",
-      website: "",
-    },
+    defaultValues,
   });
   const [listingPriceEth, setListingPriceEth] = useState(0);
+  const { createNFT, isPending } = useCreateNFT();
+  const router = useRouter();
 
   useEffect(() => {
     (async () => {
-      const listingPriceWei = await getListingPrice();
-      const listingPriceEth = getEthFromWei(listingPriceWei);
-      setListingPriceEth(listingPriceEth);
-    })();
-  }, []);
-
-  console.log("form image errro:", errors);
-  const onSubmitNftForm: SubmitHandler<NftFormData> = async (formData) => {
-    const { nftImage, itemName, description, website, category } = formData;
-    try {
-      if (formData.price < listingPriceEth) {
-        toast.error("Price must be great than or equal to the listing price!", {
+      try {
+        const listingPriceWei = await getListingPrice();
+        const listingPriceEth = getEthFromWei(listingPriceWei);
+        setListingPriceEth(listingPriceEth);
+      } catch (error) {
+        console.log("Error fetching listing price ::", error);
+        toast.error("Error fetching Listing Price!", {
           duration: 5000,
           position: "bottom-right",
         });
       }
-      console.log("NFT formData :", formData, listingPriceEth);
-      const imageData = new FormData();
-      imageData.append("nftImage", nftImage[0]);
-      imageData.append("itemName", itemName);
-      imageData.append("description", description);
-      imageData.append("website", website);
-      imageData.append("category", category);
-      const uploadRequest = await fetch("/api/nft-file", {
-        method: "POST",
-        body: imageData,
-      });
-      const data = await uploadRequest.json();
-      console.log("Upload data :", data);
+    })().catch(() => {});
+  }, [setError]);
+
+  console.log("form image errro:", errors);
+  const onSubmitNftForm: SubmitHandler<NftFormData> = async (formData) => {
+    // const { nftImage, itemName, description, website, category } = formData;
+    try {
+      if (formData.price < listingPriceEth) {
+        setError("price", {
+          message: "Price must be great than or equal to the listing price!",
+        });
+        return;
+      }
+      const result = await createNFT({ ...formData, listingPriceEth });
+      if (result.success) {
+        router.replace("/nft/collections");
+      }
     } catch (error: unknown | Error) {
-      console.log("Error create nft!", error);
+      console.log("Error creating nft!", error);
       toast.error("Failed to create NFT!", {
         duration: 5000,
         position: "bottom-right",
@@ -274,7 +281,15 @@ export const CreateNftForm = () => {
 
           <div className="h-2" />
           <div className="grid grid-cols-2 gap-4">
-            <Button type="submit">Create</Button>
+            <Button type="submit" disabled={isPending}>
+              {isPending ? (
+                <>
+                  <LoaderCircle className="animate-spin" /> Creating...
+                </>
+              ) : (
+                "Create"
+              )}
+            </Button>
             <Button type="button" variant={"secondary"}>
               Preview
             </Button>

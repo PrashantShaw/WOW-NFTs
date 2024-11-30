@@ -4,7 +4,7 @@ import { useCallback, useState } from "react";
 import { useWriteContract } from "wagmi";
 import { QueryKey, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { getRequiredEthChain } from "@/lib/utils";
+import { getRequiredEthChain, getWeiFromEth } from "@/lib/utils";
 import { waitForTransactionReceipt } from "@wagmi/core";
 import { type WriteContractErrorType } from "@wagmi/core";
 import { type WaitForTransactionReceiptErrorType } from "@wagmi/core";
@@ -14,16 +14,19 @@ import { useDataAccessLayer } from "./useDataAccessLayer";
 import { NftFormData } from "@/app/(root)/(NFT)/nft/create/_components/CreateNftForm";
 import { NFTFileUploadResponseData } from "@/lib/definitions";
 
+type CreateNFTFormData = {
+  listingPriceEth: number;
+} & NftFormData;
 const useCreateNFT = () => {
   const [isPending, setIsPending] = useState(false);
   const { id: requiredChainId } = getRequiredEthChain();
   const { getItem } = useLocalStorage();
   const queryClient = useQueryClient();
   const { writeContractAsync } = useWriteContract();
-  const { verifyAllChecks } = useDataAccessLayer();
+  const { verifyConnectionAndChain } = useDataAccessLayer();
 
   const createNFT = useCallback(
-    async (nftFormData: NftFormData) => {
+    async (nftFormData: CreateNFTFormData) => {
       let success = false;
       const {
         nftImage,
@@ -32,9 +35,13 @@ const useCreateNFT = () => {
         description,
         website,
         category,
+        listingPriceEth,
       } = nftFormData;
 
       try {
+        verifyConnectionAndChain();
+        setIsPending(true);
+
         const formDataBody = new FormData();
         formDataBody.append("nftImage", nftImage[0]);
         formDataBody.append("itemName", itemName);
@@ -46,28 +53,30 @@ const useCreateNFT = () => {
           method: "POST",
           body: formDataBody,
         });
-        const data: NFTFileUploadResponseData = await uploadRequest.json();
-        console.log("Upload data :", data);
+        const { ipfsHash, isDuplicate }: NFTFileUploadResponseData =
+          await uploadRequest.json();
+        console.log("Upload data :", ipfsHash, isDuplicate);
 
-        verifyAllChecks();
-        setIsPending(true);
+        const priceInWei = getWeiFromEth(priceInEth);
+        const listingPriceInWei = getWeiFromEth(listingPriceEth);
 
         const hash = await writeContractAsync({
           address: NFT_CONTRACT_CONFIG.address,
           abi: NFT_CONTRACT_CONFIG.abi,
           functionName: "createToken",
-          args: [data.IpfsHash, BigInt(priceInEth)],
+          args: [ipfsHash, BigInt(priceInWei)],
           chainId: requiredChainId,
+          value: BigInt(listingPriceInWei),
         });
         await waitForTransactionReceipt(getConfig(), {
           hash,
           chainId: requiredChainId,
         });
+
         const getUnsoldNFTsQueryKey: QueryKey | undefined = getItem(
           LOCALSTORAGE_KEYS.getUnsoldNFTs
         );
         queryClient.invalidateQueries({ queryKey: getUnsoldNFTsQueryKey });
-        // optionally, u can fetch event which is emitted when tweet is created using 'useWatchContractEvent' hook
         success = true;
         toast.success("NFT Created!", {
           position: "bottom-center",
@@ -79,6 +88,7 @@ const useCreateNFT = () => {
           | WaitForTransactionReceiptErrorType
           | Error;
         const shortErrorMessage = typedError.message.split("\n")[0];
+        console.log("error creating nft ::", typedError);
         toast.error(shortErrorMessage, {
           position: "bottom-right",
           duration: 5000,
@@ -89,7 +99,13 @@ const useCreateNFT = () => {
 
       return { success };
     },
-    [verifyAllChecks, writeContractAsync, requiredChainId, getItem, queryClient]
+    [
+      verifyConnectionAndChain,
+      writeContractAsync,
+      requiredChainId,
+      getItem,
+      queryClient,
+    ]
   );
 
   return {

@@ -1,7 +1,7 @@
 "use client";
-import { getRequiredEthChain, parseNFT } from "@/lib/utils";
+import { getPinataImageUrl, getRequiredEthChain, parseNFT } from "@/lib/utils";
 import { LOCALSTORAGE_KEYS, NFT_CONTRACT_CONFIG } from "@/lib/constants";
-import { RawNFT, NFT } from "@/lib/definitions";
+import { RawNFT, NFTMarketItem, PinataFileMetadata } from "@/lib/definitions";
 import { useMemo } from "react";
 import { useReadContract } from "wagmi";
 import useLocalStorage from "./useLocalStorage";
@@ -12,7 +12,7 @@ export const useGetUnsoldNFTs = (enabled = true) => {
   const {
     data: rawNFTs,
     isPending: isFetchingUnsoldNFTs,
-    error,
+    error: unsoldNFTsFetchError,
     queryKey,
   } = useReadContract({
     address: NFT_CONTRACT_CONFIG.address,
@@ -45,16 +45,52 @@ export const useGetUnsoldNFTs = (enabled = true) => {
   console.log("pinataFileMetadata :", pinataFileMetadata);
   console.log("pinataMetadataError :", pinataMetadataError);
 
+  console.log(
+    "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$",
+    rawNFTs,
+    pinataFileMetadata
+  );
+
   const unsoldNFTs = useMemo(() => {
     if (!rawNFTs || !pinataFileMetadata) return [];
 
-    // TODO: merge pinataFileMetadata with the nft data which is to be rendered
-    const newNFTsFirst = rawNFTs.reduce((acc: NFT[], rawNft: RawNFT) => {
-      const parsedNFTData = parseNFT(rawNft);
-      acc.push(parsedNFTData);
+    const nftMetadataList = pinataFileMetadata.files;
+    const newNFTsFirst = rawNFTs.reduce(
+      (acc: NFTMarketItem[], rawNft: RawNFT) => {
+        const {
+          owner,
+          price,
+          seller,
+          sold,
+          tokenId,
+          tokenURI: ipfsHash,
+        } = parseNFT(rawNft);
+        const nftMetadata = nftMetadataList.find(
+          (item) => item.ipfs_pin_hash === ipfsHash
+        );
+        if (!nftMetadata) return acc;
 
-      return acc;
-    }, []);
+        const { itemName, description, category, website } = nftMetadata
+          .metadata.keyvalues as PinataFileMetadata;
+        const imageUrl = getPinataImageUrl(ipfsHash);
+        const nftMarketItem = {
+          tokenId,
+          seller,
+          owner,
+          price,
+          sold,
+          imageUrl,
+          itemName,
+          description,
+          category,
+          website,
+        };
+        acc.push(nftMarketItem);
+
+        return acc;
+      },
+      []
+    );
 
     setItem(LOCALSTORAGE_KEYS.getUnsoldNFTs, queryKey);
     return newNFTsFirst;
@@ -63,7 +99,8 @@ export const useGetUnsoldNFTs = (enabled = true) => {
   return {
     unsoldNFTs,
     isPending: isFetchingUnsoldNFTs || isFetchingMetadata,
-    error,
+    unsoldNFTsFetchError,
+    pinataMetadataError,
     queryKey,
   };
 };

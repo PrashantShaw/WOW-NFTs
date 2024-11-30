@@ -8,6 +8,7 @@ export type RawNFT = {
   owner: `0x${string}`;
   price: bigint;
   sold: boolean;
+  tokenURI: string;
 };
 
 export type NFT = {
@@ -16,9 +17,30 @@ export type NFT = {
   owner: `0x${string}`;
   price: string;
   sold: boolean;
+  tokenURI: string;
+};
+
+export type NFTMarketItem = {
+  tokenId: string;
+  seller: `0x${string}`;
+  owner: `0x${string}`;
+  price: string;
+  sold: boolean;
+  imageUrl: string;
+  itemName: string;
+  description: string;
+  category: string;
+  website: string;
+};
+
+export type PinataFileMetadata = {
+  itemName: string;
+  description: string;
+  category: string;
+  website: string;
 };
 
 export type NFTFileUploadResponseData = {
-  IpfsHash: string;
-  url: string;
+  ipfsHash: string;
+  isDuplicate: string;
 };
