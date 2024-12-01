@@ -1,6 +1,9 @@
 "use client";
 import { useGetUnsoldNFTs } from "@/hooks/useGetUnsoldNFTs";
-import { getEthFromWei } from "@/lib/utils";
+import { NFTMarketItem } from "@/lib/definitions";
+import { getEthFromWei, shortedAccountAddress } from "@/lib/utils";
+import Image from "next/image";
+import Link from "next/link";
 // import { PinListItem } from "pinata-web3";
 
 // type UnsoldNFTsProps = {
@@ -22,12 +25,11 @@ const UnsoldNFTs = () => {
   return (
     <div>
       {unsoldNFTs.length > 0 ? (
-        <div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 py-[4rem]">
           {unsoldNFTs.map((nft) => (
-            <div key={nft.tokenId}>
-              {nft.itemName} - {getEthFromWei(Number(nft.price)) + " ETH"} -{" "}
-              {nft.imageUrl}
-            </div>
+            <>
+              <NFTCard key={nft.tokenId} nft={nft} />
+            </>
           ))}
         </div>
       ) : (
@@ -38,3 +40,32 @@ const UnsoldNFTs = () => {
 };
 
 export default UnsoldNFTs;
+
+const NFTCard = ({ nft }: { nft: NFTMarketItem }) => {
+  return (
+    <Link href={"/"}>
+      <div className="shadow bg-gray-50 dark:bg-gray-900 overflow-hidden rounded-lg aspect-[3/4] flex flex-col group/nftCard">
+        <div className="flex-grow overflow-hidden flex">
+          <Image
+            src={nft.imageUrl}
+            className="flex-1 object-cover group-hover/nftCard:scale-105 transition-all duration-300"
+            alt="NFT Image"
+            width={300}
+            height={300}
+          />
+        </div>
+        <div className="p-3">
+          <p className="font-semibold">
+            {nft.itemName} #{nft.tokenId}
+          </p>
+          <p className="text-lg font-bold pt-2">
+            {getEthFromWei(Number(nft.price)) + " ETH"}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Owner: {shortedAccountAddress(nft.owner)}
+          </p>
+        </div>
+      </div>
+    </Link>
+  );
+};
