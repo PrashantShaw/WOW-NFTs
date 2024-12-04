@@ -72,3 +72,6 @@ export const getPinataImageUrl = (pinataIpfsHash: string) => {
 
   return pinataImageUrl;
 };
+
+export const textCapitalize = (text: string) =>
+  text.replace(/\b[a-z]/g, (match) => match.toUpperCase());

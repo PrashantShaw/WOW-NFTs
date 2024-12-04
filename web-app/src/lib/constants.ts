@@ -54,3 +54,5 @@ export const BRAND = {
   linkedin: "https://www.linkedin.com/in/prashant-shaw/",
   twitter: "https://x.com/ImPrashantShaw",
 } as const;
+
+export const NFT_CATEGORIES = ["characters", "art", "entertainment"] as const;

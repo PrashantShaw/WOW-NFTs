@@ -17,10 +17,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import toast from "react-hot-toast";
-import { getEthFromWei, getListingPrice } from "@/lib/utils";
+import { getEthFromWei, getListingPrice, textCapitalize } from "@/lib/utils";
 import useCreateNFT from "@/hooks/useCreateNFT";
 import { useRouter } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
+import { NFT_CATEGORIES } from "@/lib/constants";
 
 const imageSchemaZ = z
   .custom<FileList>(
@@ -30,9 +31,10 @@ const imageSchemaZ = z
   .refine((fileList) => fileList[0]?.type.startsWith("image/"), {
     message: "Selected Item is not an image!",
   })
-  .refine((fileList) => fileList[0]?.size <= 5 * 1024 * 1024, {
-    message: "Max file size is 10MB",
+  .refine((fileList) => fileList[0]?.size <= 4 * 1024 * 1024, {
+    message: "Max file size is 4MB",
   });
+// TODO: increase max file size to 10mb, use pinata's client side approach - https://docs.pinata.cloud/frameworks/next-js-ipfs
 
 const nftSchemaZ = z.object({
   nftImage: imageSchemaZ,
@@ -201,10 +203,11 @@ export const CreateNftForm = () => {
                     />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="art">Art</SelectItem>
-                    <SelectItem value="character">Character</SelectItem>
-                    <SelectItem value="entertainment">Entertainment</SelectItem>
-                    <SelectItem value="sports">Sports</SelectItem>
+                    {NFT_CATEGORIES.map((category, idx) => (
+                      <SelectItem key={idx} value={category}>
+                        {textCapitalize(category)}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
 

@@ -1,10 +1,10 @@
 import React from "react";
-import UnsoldNFTs from "./_components/UnsoldNFTs";
+import CollectionsWrapper from "./_components/CollectionsWrapper";
 
 const NFTCollectionsPage = () => {
   return (
     <div>
-      <UnsoldNFTs />
+      <CollectionsWrapper />
     </div>
   );
 };
