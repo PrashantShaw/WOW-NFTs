@@ -9,6 +9,7 @@ import SideNavSheet from "./SideNavSheet";
 import NavbarActions from "./NavbarActions";
 import { Sparkles } from "lucide-react";
 import { SearchModal } from "../SearchModal";
+import { BRAND } from "@/lib/constants";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = React.useState(false);
@@ -33,7 +34,7 @@ export default function Navbar() {
           <Link href="/" className="mr-6 flex items-center space-x-2">
             <Sparkles />
             <span className="hidden font-bold lg:inline-block text-nowrap">
-              NFT Market
+              {BRAND.name}
             </span>
           </Link>
           {/* <nav className="flex items-center space-x-0 text-sm font-medium">

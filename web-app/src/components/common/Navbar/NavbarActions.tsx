@@ -30,15 +30,15 @@ const NavbarActions = () => {
       <nav className="flex items-center space-x-1">
         <ThemeToggler />
         {isConnected && address ? (
-          <>
-            <Link href={"/nft/create"}>
-              <Button size={"sm"} className="mr-3 ml-1">
+          <div className="flex gap-3 items-center pl-2">
+            <Button size={"sm"} asChild>
+              <Link href={"/nft/create"}>
                 Create
                 <Plus strokeWidth={3} />
-              </Button>
-            </Link>
+              </Link>
+            </Button>
             <ProfileMenu address={address} />
-          </>
+          </div>
         ) : (
           <>
             <Button size={"sm"} onClick={connectToWallet} variant={"default"}>

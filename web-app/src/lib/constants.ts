@@ -46,3 +46,11 @@ export const ETH_CHAINS = {
 } as const;
 
 export const PINATA_FILE_METADATA_NAME = "NFTMARKETPLACE_PINATA";
+
+export const BRAND = {
+  name: "WOW NFTs",
+  owner: "Prashant Shaw",
+  github: "https://github.com/PrashantShaw",
+  linkedin: "https://www.linkedin.com/in/prashant-shaw/",
+  twitter: "https://x.com/ImPrashantShaw",
+} as const;
