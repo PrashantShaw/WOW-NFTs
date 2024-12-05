@@ -46,6 +46,7 @@ export const useGetUnsoldNFTsV2 = (enabled = true) => {
           imageUrl,
           itemName,
           category,
+          ipfsHash,
         };
         acc.push(nftMarketItem);
 

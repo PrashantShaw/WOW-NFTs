@@ -33,7 +33,10 @@ export type NFTMarketItem = {
   website: string;
 };
 
-export type UnsoldMarketItem = Omit<NFTMarketItem, "description" | "website">;
+export type UnsoldMarketItem = Omit<
+  NFTMarketItem,
+  "description" | "website"
+> & { ipfsHash: string };
 
 export type PinataFileMetadata = {
   itemName: string;
