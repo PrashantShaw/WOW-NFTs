@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.4;
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity >=0.8.2 <0.9.0;
 
 /**
  * ERC-721 is a standard for representing ownership of non-fungible tokens, that is, where each token is unique.
