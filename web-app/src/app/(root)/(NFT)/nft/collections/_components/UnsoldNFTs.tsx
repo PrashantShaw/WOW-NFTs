@@ -1,4 +1,4 @@
-import { NFTMarketItem } from "@/lib/definitions";
+import { UnsoldMarketItem } from "@/lib/definitions";
 import { NFTCard } from "./NFTCard";
 import NFTCardSkeleton from "./NFTCardSkeleton";
 import { ReadContractErrorType } from "viem";
@@ -6,16 +6,14 @@ import { ReadContractErrorType } from "viem";
 
 type UnsoldNFTsProps = {
   filter: string;
-  unsoldNFTs: NFTMarketItem[];
+  unsoldNFTs: UnsoldMarketItem[];
   isPending: boolean;
-  pinataMetadataError: Error | null;
   unsoldNFTsFetchError: ReadContractErrorType | null;
 };
 const UnsoldNFTs = ({
   filter,
   unsoldNFTs,
   isPending,
-  pinataMetadataError,
   unsoldNFTsFetchError,
 }: UnsoldNFTsProps) => {
   if (isPending)
@@ -26,9 +24,12 @@ const UnsoldNFTs = ({
         <NFTCardSkeleton />
       </div>
     );
-  if (pinataMetadataError) return <div>{pinataMetadataError.message}</div>;
   if (unsoldNFTsFetchError)
-    return <div>{unsoldNFTsFetchError.shortMessage}</div>;
+    return (
+      <div className="text-center text-red-500 font-semibold pt-10">
+        {unsoldNFTsFetchError.shortMessage}
+      </div>
+    );
 
   const filteredNFTs =
     filter === "all"

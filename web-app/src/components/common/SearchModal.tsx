@@ -12,6 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 // Mock API function (replace with your actual API call)
 const fetchSearchResults = async (query: string): Promise<string[]> => {
   // Simulate API delay
+  // TODO: when use clicks on a nft then show the full details of the nft, in this case only fetch the token metadata from pinata (use ipfs to fethc the toke metadata)
   await new Promise((resolve) => setTimeout(resolve, 500));
   // Return mock results based on query
   return [

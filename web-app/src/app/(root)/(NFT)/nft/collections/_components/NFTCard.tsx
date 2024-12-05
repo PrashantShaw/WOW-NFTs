@@ -1,11 +1,11 @@
-import { NFTMarketItem } from "@/lib/definitions";
+import { UnsoldMarketItem } from "@/lib/definitions";
 import { getEthFromWei, shortedAccountAddress } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 
-export const NFTCard = ({ nft }: { nft: NFTMarketItem }) => {
+export const NFTCard = ({ nft }: { nft: UnsoldMarketItem }) => {
   return (
-    <Link href={"/"}>
+    <Link href={`/nft/${nft.tokenId}`}>
       <div className="shadow bg-gray-50 dark:bg-gray-900 overflow-hidden rounded-lg aspect-[3/4] flex flex-col group/nftCard">
         <div className="flex-grow overflow-hidden flex">
           <Image

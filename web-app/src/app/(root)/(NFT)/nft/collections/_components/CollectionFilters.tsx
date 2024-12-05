@@ -9,8 +9,6 @@ type CollectionFiltersProps = {
   setFilter: Dispatch<SetStateAction<string>>;
 };
 const CollectionFilters = ({ setFilter }: CollectionFiltersProps) => {
-  const categoriesLen = NFT_CATEGORIES.length + 1;
-  const tabListClasses = `sm:grid sm:grid-cols-${categoriesLen}`;
   return (
     <div className="pt-[2.5rem]">
       <h1 className="text-5xl font-bold mb-4">A collection of awesome NFTs</h1>
@@ -25,7 +23,7 @@ const CollectionFilters = ({ setFilter }: CollectionFiltersProps) => {
           className="max-w-2xl"
           onValueChange={setFilter}
         >
-          <TabsList className={tabListClasses}>
+          <TabsList className="sm:grid sm:grid-cols-4">
             <TabsTrigger value="all">All</TabsTrigger>
             {NFT_CATEGORIES.map((category, idx) => (
               <TabsTrigger key={idx} value={category}>

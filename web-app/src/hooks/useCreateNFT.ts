@@ -4,7 +4,11 @@ import { useCallback, useState } from "react";
 import { useWriteContract } from "wagmi";
 import { QueryKey, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { getRequiredEthChain, getWeiFromEth } from "@/lib/utils";
+import {
+  createTokenUri,
+  getRequiredEthChain,
+  getWeiFromEth,
+} from "@/lib/utils";
 import { waitForTransactionReceipt } from "@wagmi/core";
 import { type WriteContractErrorType } from "@wagmi/core";
 import { type WaitForTransactionReceiptErrorType } from "@wagmi/core";
@@ -59,12 +63,13 @@ const useCreateNFT = () => {
 
         const priceInWei = getWeiFromEth(priceInEth);
         const listingPriceInWei = getWeiFromEth(listingPriceEth);
+        const tokenUri = createTokenUri(itemName, category, ipfsHash);
 
         const hash = await writeContractAsync({
           address: NFT_CONTRACT_CONFIG.address,
           abi: NFT_CONTRACT_CONFIG.abi,
           functionName: "createToken",
-          args: [ipfsHash, BigInt(priceInWei)],
+          args: [tokenUri, BigInt(priceInWei)],
           chainId: requiredChainId,
           value: BigInt(listingPriceInWei),
         });

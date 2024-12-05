@@ -75,3 +75,16 @@ export const getPinataImageUrl = (pinataIpfsHash: string) => {
 
 export const textCapitalize = (text: string) =>
   text.replace(/\b[a-z]/g, (match) => match.toUpperCase());
+
+export const createTokenUri = (
+  itemName: string,
+  category: string,
+  ipfsHash: string
+) => `${itemName}::${category}::${ipfsHash}`;
+
+export const splitTokenUri = (tokenUri: string) =>
+  tokenUri.split("::") as [
+    itemName: string,
+    category: string,
+    ipfsHash: string
+  ];

@@ -14,8 +14,14 @@ export function Providers(props: {
   children: ReactNode;
   initialState?: State;
 }) {
+  const staleTime = 60 * 60 * 1000;
   const [config] = useState(() => getConfig());
-  const [queryClient] = useState(() => new QueryClient());
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: { queries: { staleTime } },
+      })
+  );
   const themeProps: ThemeProviderProps = {
     attribute: "class",
     defaultTheme: "system",

@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import CollectionFilters from "./CollectionFilters";
-import { useGetUnsoldNFTs } from "@/hooks/useGetUnsoldNFTs";
 import UnsoldNFTs from "./UnsoldNFTs";
+import { useGetUnsoldNFTsV2 } from "@/hooks/useGetUnsoldNFTsV2";
 
 const CollectionsWrapper = () => {
   const [filter, setFilter] = useState("all");
-  const { unsoldNFTs, isPending, pinataMetadataError, unsoldNFTsFetchError } =
-    useGetUnsoldNFTs(true);
+  const { unsoldNFTs, isPending, unsoldNFTsFetchError } =
+    useGetUnsoldNFTsV2(true);
 
   return (
     <div>
@@ -17,7 +17,6 @@ const CollectionsWrapper = () => {
         filter={filter}
         unsoldNFTs={unsoldNFTs}
         isPending={isPending}
-        pinataMetadataError={pinataMetadataError}
         unsoldNFTsFetchError={unsoldNFTsFetchError}
       />
     </div>

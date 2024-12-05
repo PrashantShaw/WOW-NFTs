@@ -33,6 +33,8 @@ export type NFTMarketItem = {
   website: string;
 };
 
+export type UnsoldMarketItem = Omit<NFTMarketItem, "description" | "website">;
+
 export type PinataFileMetadata = {
   itemName: string;
   description: string;
