@@ -14,10 +14,10 @@ const CollectionsWrapper = () => {
     <div>
       <CollectionFilters filter={filter} setFilter={setFilter} />
       <UnsoldNFTs
-        filter={filter}
         unsoldNFTs={unsoldNFTs}
         isPending={isPending}
         unsoldNFTsFetchError={unsoldNFTsFetchError}
+        filter={filter}
       />
     </div>
   );

@@ -5,16 +5,18 @@ import { ReadContractErrorType } from "viem";
 // import { PinListItem } from "pinata-web3";
 
 type UnsoldNFTsProps = {
-  filter: string;
   unsoldNFTs: UnsoldMarketItem[];
   isPending: boolean;
   unsoldNFTsFetchError: ReadContractErrorType | null;
+  filter: string;
+  count?: number;
 };
 const UnsoldNFTs = ({
-  filter,
   unsoldNFTs,
   isPending,
   unsoldNFTsFetchError,
+  filter,
+  count,
 }: UnsoldNFTsProps) => {
   if (isPending)
     return (
@@ -33,10 +35,10 @@ const UnsoldNFTs = ({
 
   const filteredNFTs =
     filter === "all"
-      ? unsoldNFTs
-      : unsoldNFTs.filter(
-          (nft) => nft.category.toLowerCase() === filter.toLowerCase()
-        );
+      ? unsoldNFTs.slice(0, count)
+      : unsoldNFTs
+          .filter((nft) => nft.category.toLowerCase() === filter.toLowerCase())
+          .slice(0, count);
 
   return (
     <div>

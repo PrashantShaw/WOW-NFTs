@@ -17,6 +17,7 @@ export const useGetUnsoldNFTsV2 = (enabled = true) => {
     isPending: isFetchingUnsoldNFTs,
     error: unsoldNFTsFetchError,
     queryKey,
+    refetch: fetchUnsoldNFTs,
   } = useReadContract({
     address: NFT_CONTRACT_CONFIG.address,
     abi: NFT_CONTRACT_CONFIG.abi,
@@ -64,5 +65,6 @@ export const useGetUnsoldNFTsV2 = (enabled = true) => {
     isPending: isFetchingUnsoldNFTs,
     unsoldNFTsFetchError,
     queryKey,
+    fetchUnsoldNFTs,
   };
 };

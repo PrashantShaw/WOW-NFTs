@@ -3,33 +3,33 @@
 import * as React from "react";
 import { Loader2, Search } from "lucide-react";
 
-import { cn, debounce } from "@/lib/utils";
+import { cn, getEthFromWei, textCapitalize } from "@/lib/utils";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
-// Mock API function (replace with your actual API call)
-const fetchSearchResults = async (query: string): Promise<string[]> => {
-  // Simulate API delay
-  // TODO: use a hook to fetch listing price
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  // Return mock results based on query
-  return [
-    `Result for ${query} 1`,
-    `Result for ${query} 2`,
-    `Result for ${query} 3`,
-  ];
-};
-
-const debouncedFetchSearchResults = debounce(fetchSearchResults, 300);
+import { useGetUnsoldNFTsV2 } from "@/hooks/useGetUnsoldNFTsV2";
+import { useRouter } from "next/navigation";
 
 export function SearchModal() {
   const [open, setOpen] = React.useState(false);
   const [inputValue, setInputValue] = React.useState("");
-  const [searchResults, setSearchResults] = React.useState<string[]>([]);
-  const [isLoading, setIsLoading] = React.useState(false);
+  const router = useRouter();
   const [selectedIndex, setSelectedIndex] = React.useState(-1);
+  const { unsoldNFTs, isPending, unsoldNFTsFetchError } =
+    useGetUnsoldNFTsV2(true);
+
+  const searchResults = React.useMemo(
+    () =>
+      inputValue.trim() === ""
+        ? []
+        : unsoldNFTs.filter(
+            (nft) =>
+              nft.itemName.toLowerCase().includes(inputValue) ||
+              nft.category.toLowerCase().includes(inputValue)
+          ),
+    [inputValue, unsoldNFTs]
+  );
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -43,28 +43,9 @@ export function SearchModal() {
     return () => document.removeEventListener("keydown", down);
   }, []);
 
-  const handleSearch = React.useCallback(async (value: string) => {
-    if (value.trim() === "") {
-      setSearchResults([]);
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const results = await debouncedFetchSearchResults(value);
-      setSearchResults(results);
-      setSelectedIndex(results.length > 0 ? 0 : -1);
-    } catch (error) {
-      console.error("Error fetching search results:", error);
-      setSearchResults([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
   React.useEffect(() => {
-    handleSearch(inputValue);
-  }, [inputValue, handleSearch]);
+    setSelectedIndex(searchResults.length > 0 ? 0 : -1);
+  }, [inputValue, searchResults.length]);
 
   const handleKeyDownOnInput = React.useCallback(
     (e: React.KeyboardEvent) => {
@@ -78,11 +59,13 @@ export function SearchModal() {
         setSelectedIndex((prev) => (prev > 0 ? prev - 1 : prev));
       } else if (e.key === "Enter" && selectedIndex >= 0) {
         e.preventDefault();
-        // Handle selection (e.g., navigate to result page)
-        console.log("Pressed Enter on:", searchResults[selectedIndex]);
+        const selectedResult = searchResults[selectedIndex];
+        const tokenId = selectedResult.tokenId;
+        router.push(`/nft/${tokenId}`);
+        setOpen(false);
       }
     },
-    [searchResults, selectedIndex]
+    [router, searchResults, selectedIndex]
   );
   const handleMouseOverOnSearchResult = React.useCallback(
     (e: React.MouseEvent) => {
@@ -95,10 +78,12 @@ export function SearchModal() {
   const handleClickOnSearchResult = React.useCallback(
     (e: React.MouseEvent) => {
       const currIdx = Number(e.currentTarget.getAttribute("data-index") ?? -1);
-      setSelectedIndex(currIdx);
-      console.log("Clicked on:", searchResults[currIdx]);
+      const selectedResult = searchResults[currIdx];
+      const tokenId = selectedResult.tokenId;
+      router.push(`/nft/${tokenId}`);
+      setOpen(false);
     },
-    [searchResults]
+    [router, searchResults]
   );
 
   return (
@@ -131,7 +116,7 @@ export function SearchModal() {
           </div>
           <DialogTitle className="hidden">Search Dialog</DialogTitle>
           <ScrollArea className="h-72">
-            {isLoading ? (
+            {isPending ? (
               <div className="flex items-center justify-center py-6">
                 <Loader2 className="h-4 w-4 animate-spin" />
               </div>
@@ -150,7 +135,22 @@ export function SearchModal() {
                     onMouseOver={handleMouseOverOnSearchResult}
                     onClick={handleClickOnSearchResult}
                   >
-                    {result}
+                    <div className="flex items-center justify-between">
+                      <div className="">
+                        <p className="font-semibold">
+                          <span className="text-muted-foreground pr-2">
+                            #{result.tokenId}
+                          </span>
+                          {result.itemName}
+                        </p>
+                        <p className="text-muted-foreground pl-6 text-xs">
+                          {textCapitalize(result.category)}
+                        </p>
+                      </div>
+                      <div className="font-bold">
+                        {getEthFromWei(Number(result.price))} ETH
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -159,6 +159,11 @@ export function SearchModal() {
                 No results found.
               </p>
             )}
+            {unsoldNFTsFetchError ? (
+              <p className="text-destructive font-semibold text-center">
+                Error fetching NFTs
+              </p>
+            ) : null}
           </ScrollArea>
         </DialogContent>
       </Dialog>
