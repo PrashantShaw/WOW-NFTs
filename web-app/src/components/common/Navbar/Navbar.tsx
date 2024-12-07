@@ -7,9 +7,9 @@ import { cn } from "@/lib/utils";
 
 import SideNavSheet from "./SideNavSheet";
 import NavbarActions from "./NavbarActions";
-import { Sparkles } from "lucide-react";
 import { SearchModal } from "../SearchModal";
 import { BRAND } from "@/lib/constants";
+import Image from "next/image";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = React.useState(false);
@@ -32,7 +32,7 @@ export default function Navbar() {
       <div className="container flex h-14 items-center px-6 mx-auto gap-3">
         <div className="mr-4 hidden md:flex">
           <Link href="/" className="mr-6 flex items-center space-x-2">
-            <Sparkles />
+            <Image src={"/icon.png"} width={32} height={32} alt="brand logo" />
             <span className="hidden font-bold lg:inline-block text-nowrap">
               {BRAND.name}
             </span>
