@@ -8,8 +8,9 @@ import { cn } from "@/lib/utils";
 import SideNavSheet from "./SideNavSheet";
 import NavbarActions from "./NavbarActions";
 import { SearchModal } from "../SearchModal";
-import { BRAND } from "@/lib/constants";
+import { BRAND, NAV_LINKS } from "@/lib/constants";
 import Image from "next/image";
+import NavLink from "./NavLink";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = React.useState(false);
@@ -37,12 +38,12 @@ export default function Navbar() {
               {BRAND.name}
             </span>
           </Link>
-          {/* <nav className="flex items-center space-x-0 text-sm font-medium">
+          <SearchModal />
+          <nav className="flex items-center space-x-0 text-sm font-medium pl-3">
             {NAV_LINKS.map(({ label, href }, idx) => (
               <NavLink key={idx} label={label} href={href} />
             ))}
-          </nav> */}
-          <SearchModal />
+          </nav>
         </div>
         <SideNavSheet />
         <NavbarActions />

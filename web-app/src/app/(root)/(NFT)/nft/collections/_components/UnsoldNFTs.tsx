@@ -2,6 +2,7 @@ import { UnsoldMarketItem } from "@/lib/definitions";
 import { NFTCard } from "./NFTCard";
 import NFTCardSkeleton from "./NFTCardSkeleton";
 import { ReadContractErrorType } from "viem";
+import { applyFilters, SortByTypes } from "@/lib/utils";
 // import { PinListItem } from "pinata-web3";
 
 type UnsoldNFTsProps = {
@@ -9,6 +10,7 @@ type UnsoldNFTsProps = {
   isPending: boolean;
   unsoldNFTsFetchError: ReadContractErrorType | null;
   filter: string;
+  sortBy: SortByTypes;
   count?: number;
 };
 const UnsoldNFTs = ({
@@ -16,6 +18,7 @@ const UnsoldNFTs = ({
   isPending,
   unsoldNFTsFetchError,
   filter,
+  sortBy,
   count,
 }: UnsoldNFTsProps) => {
   if (isPending)
@@ -33,13 +36,7 @@ const UnsoldNFTs = ({
       </div>
     );
 
-  const filteredNFTs =
-    filter === "all"
-      ? unsoldNFTs.slice(0, count)
-      : unsoldNFTs
-          .filter((nft) => nft.category.toLowerCase() === filter.toLowerCase())
-          .slice(0, count);
-
+  const filteredNFTs = applyFilters(unsoldNFTs, filter, sortBy, count);
   return (
     <div>
       {filteredNFTs.length > 0 ? (

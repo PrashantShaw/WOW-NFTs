@@ -26,7 +26,7 @@ const FeaturedNFTs = () => {
     });
   }
   return (
-    <div className="pt-[4rem]">
+    <div className="pt-[4rem]" id="featuredNFTs">
       <h2 className="text-4xl font-semibold tracking-tight first:mt-0 mb-4 text-center">
         Featured Items
       </h2>

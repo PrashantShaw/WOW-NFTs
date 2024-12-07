@@ -1,12 +1,19 @@
 import { NFT_ABI } from "@/abi/NFTMarketplace";
 import { defineChain } from "viem";
 import { mainnet, sepolia, holesky } from "wagmi/chains";
+import {
+  ArrowDownAZ,
+  ArrowDownNarrowWide,
+  ArrowDownWideNarrow,
+  ArrowDownZA,
+  ListRestart,
+} from "lucide-react";
 
 export const NAV_LINKS = [
-  { label: "Products", href: "/" },
-  { label: "Services", href: "/" },
-  { label: "Contacts", href: "/" },
-  { label: "About", href: "/" },
+  { label: "Collections", href: "/nft/collections" },
+  { label: "Featured", href: "/#featuredNFTs" },
+  { label: "Learn", href: "/#learn" },
+  // { label: "About", href: "/" },
 ] as const;
 
 export const NFT_CONTRACT_ADDRESS = process.env
@@ -82,5 +89,33 @@ export const EDUCATIONAL_Q_AND_A = [
     question: "How create an NFT??",
     answer:
       "Connect your metamask wallet using the button from the navbar. After successfully connecting your wallet, click on the Create button near your profile avatar. On the Create NFT page, add NFT item and fill the details about it, then pay the listing price so that your NFT can be listed on the NFT market.",
+  },
+];
+
+export const SORT_BY_TYPES = [
+  {
+    sortBy: "none",
+    label: "Reset",
+    iconName: ListRestart,
+  },
+  {
+    sortBy: "low-to-high",
+    label: "Price low to high",
+    iconName: ArrowDownNarrowWide,
+  },
+  {
+    sortBy: "high-to-low",
+    label: "Price high to low",
+    iconName: ArrowDownWideNarrow,
+  },
+  {
+    sortBy: "A-to-Z",
+    label: "A to Z",
+    iconName: ArrowDownAZ,
+  },
+  {
+    sortBy: "Z-to-A",
+    label: "Z to A",
+    iconName: ArrowDownZA,
   },
 ];

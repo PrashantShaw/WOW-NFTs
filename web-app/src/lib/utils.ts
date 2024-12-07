@@ -1,7 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { ETH_CHAINS, NFT_CONTRACT_CONFIG, WEI_IN_ONE_ETH } from "./constants";
-import { ETH_NETWORKS, NFT, RawNFT } from "./definitions";
+import { ETH_NETWORKS, NFT, RawNFT, UnsoldMarketItem } from "./definitions";
 import { readContract } from "@wagmi/core";
 import { getConfig } from "@/app/wagmi";
 
@@ -88,3 +88,39 @@ export const splitTokenUri = (tokenUri: string) =>
     category: string,
     ipfsHash: string
   ];
+
+const sortByExpressions = {
+  "low-to-high": (a: UnsoldMarketItem, b: UnsoldMarketItem): number =>
+    Number(a.price) - Number(b.price),
+  "high-to-low": (a: UnsoldMarketItem, b: UnsoldMarketItem): number =>
+    Number(b.price) - Number(a.price),
+  "A-to-Z": (a: UnsoldMarketItem, b: UnsoldMarketItem): number =>
+    a.itemName < b.itemName ? -1 : 1,
+  "Z-to-A": (a: UnsoldMarketItem, b: UnsoldMarketItem): number =>
+    a.itemName > b.itemName ? -1 : 1,
+};
+
+export type SortByTypes = keyof typeof sortByExpressions | "none";
+
+export const applyFilters = (
+  nfts: UnsoldMarketItem[],
+  filterText: string,
+  sortBy: SortByTypes,
+  count?: number
+): UnsoldMarketItem[] => {
+  const filteredByTextNFTs =
+    filterText === "all"
+      ? nfts.slice(0, count)
+      : nfts
+          .filter(
+            (nft) => nft.category.toLowerCase() === filterText.toLowerCase()
+          )
+          .slice(0, count);
+
+  const SortedByTypeNFTs =
+    sortBy === "none"
+      ? filteredByTextNFTs
+      : filteredByTextNFTs.sort((a, b) => sortByExpressions[sortBy](a, b));
+
+  return SortedByTypeNFTs;
+};

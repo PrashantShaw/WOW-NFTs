@@ -8,7 +8,7 @@ import { EDUCATIONAL_Q_AND_A } from "@/lib/constants";
 
 const EducationalSection = () => {
   return (
-    <div className="pt-[8rem]">
+    <div className="pt-[8rem]" id="learn">
       <h2 className="text-4xl font-semibold tracking-tight first:mt-0 mb-4 text-center">
         Educational
       </h2>
