@@ -5,7 +5,7 @@ import React from "react";
 // TODO: visit part 1 starting and see how things work - https://www.youtube.com/watch?v=Uuwi2vNmMj0&t=1s
 const Hero = () => {
   return (
-    <div className="sm:py-32 py-28">
+    <div className="sm:py-40 py-28">
       <div className="flex flex-col items-center gap-6 max-w-[35rem] mx-auto">
         <h1 className="text-6xl font-bold text-balance text-center">
           Discover, collect, and sell NFTs

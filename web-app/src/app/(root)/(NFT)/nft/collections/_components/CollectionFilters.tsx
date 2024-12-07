@@ -8,6 +8,7 @@ type CollectionFiltersProps = {
   filter: string;
   setFilter: Dispatch<SetStateAction<string>>;
 };
+// TODO: add a sorting option based on price and alphabet
 const CollectionFilters = ({ setFilter }: CollectionFiltersProps) => {
   return (
     <div className="pt-[2.5rem]">
