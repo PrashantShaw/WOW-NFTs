@@ -1,48 +1,53 @@
 "use client";
 
+import { useGetNFTMetadata } from "@/hooks/useGetNFTMetadata";
 import { useGetUnsoldNFTsV2 } from "@/hooks/useGetUnsoldNFTsV2";
-import { LOCALSTORAGE_KEYS } from "@/lib/constants";
-import { useQuery } from "@tanstack/react-query";
-import { PinListItem } from "pinata-web3";
+import {
+  NFTMarketItem,
+  PinataFileMetadata,
+  UnsoldMarketItem,
+} from "@/lib/definitions";
 
 type ViewNFTProps = {
   id: string;
+  isPreview?: boolean;
 };
 // TODO: create buy/sell btn based on seller fo the item
-const ViewNFT = ({ id }: ViewNFTProps) => {
-  const { unsoldNFTs, isPending, unsoldNFTsFetchError } = useGetUnsoldNFTsV2();
-  const nftToShow = unsoldNFTs.filter(
-    (unsoldNFT) => unsoldNFT.tokenId === id
-  )[0];
-  const nftMetadataApiUrl = nftToShow
-    ? `/api/v2/nft-meta?cid=${nftToShow.ipfsHash}`
-    : "";
-  const {
-    data: pinataFileMetadata,
-    isPending: isFetchingMetadata,
-    error: pinataMetadataError,
-  } = useQuery<{
-    metadata: PinListItem[];
-  }>({
-    queryKey: [LOCALSTORAGE_KEYS.pinataFilesMetadata],
-    queryFn: async () => {
-      const response = await fetch(nftMetadataApiUrl, {
-        method: "GET",
-      });
-      return response.json();
-    },
-    enabled: !isPending,
-    refetchOnWindowFocus: false,
-  });
+const ViewNFT = ({ id, isPreview = false }: ViewNFTProps) => {
+  const unsoldNFTsFetchEnabled = !isPreview;
+  const { unsoldNFTs, isPending, unsoldNFTsFetchError } = useGetUnsoldNFTsV2(
+    unsoldNFTsFetchEnabled
+  );
 
-  console.log("isFetchingMetadata :", isFetchingMetadata);
-  console.log("pinataFileMetadata :", pinataFileMetadata);
-  console.log("pinataMetadataError :", pinataMetadataError);
+  const nftToShow = isPreview
+    ? ([] as UnsoldMarketItem[])
+    : unsoldNFTs.filter((unsoldNFT) => unsoldNFT.tokenId === id);
 
-  if (unsoldNFTsFetchError)
+  const nftMetadataFetchEnabled = !isPreview && nftToShow.length > 0;
+  const { pinataFileMetadata, isFetchingMetadata, pinataMetadataError } =
+    useGetNFTMetadata(
+      nftToShow.length > 0 ? nftToShow[0].ipfsHash : "",
+      nftMetadataFetchEnabled
+    );
+
+  // console.log("isFetchingMetadata :", isFetchingMetadata);
+  // console.log("pinataFileMetadata :", pinataFileMetadata);
+  // console.log("pinataMetadataError :", pinataMetadataError);
+
+  const nftMetadata = pinataFileMetadata
+    ? (pinataFileMetadata.filesMeta[0].metadata.keyvalues as PinataFileMetadata)
+    : ({} as PinataFileMetadata);
+
+  // TODO: fetch nft preview data from usePreviewNFT hook and add it here if isPreview is true
+  const nft = isPreview
+    ? ({} as NFTMarketItem)
+    : { ...nftToShow[0], ...nftMetadata };
+
+  if (unsoldNFTsFetchError || pinataMetadataError)
     return (
       <div className="text-center text-red-500 font-semibold pt-10">
-        {unsoldNFTsFetchError.shortMessage}
+        {unsoldNFTsFetchError?.shortMessage}
+        {pinataMetadataError?.message}
       </div>
     );
 
@@ -55,7 +60,14 @@ const ViewNFT = ({ id }: ViewNFTProps) => {
 
   return (
     <div>
-      {nftToShow.itemName}-{nftToShow.category}
+      {nft.itemName}-{nft.category}
+      {isFetchingMetadata ? (
+        <p>Fetching nft metadata...</p>
+      ) : (
+        <p>
+          {nft.description} - {nft.website}
+        </p>
+      )}
     </div>
   );
 };

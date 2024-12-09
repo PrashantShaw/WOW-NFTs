@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { z } from "zod";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,6 +22,7 @@ import useCreateNFT from "@/hooks/useCreateNFT";
 import { useRouter } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
 import { NFT_CATEGORIES } from "@/lib/constants";
+import { usePreviewNFT } from "@/hooks/usePreviewNFT";
 
 const imageSchemaZ = z
   .custom<FileList>(
@@ -68,12 +69,15 @@ export const CreateNftForm = () => {
     register,
     formState: { errors },
     setError,
+    trigger,
+    getValues,
   } = useForm<NftFormData>({
     resolver: zodResolver(nftSchemaZ),
     defaultValues,
   });
   const [listingPriceEth, setListingPriceEth] = useState(0);
   const { createNFT, isPending } = useCreateNFT();
+  const previewCtx = usePreviewNFT();
   const router = useRouter();
 
   useEffect(() => {
@@ -93,27 +97,41 @@ export const CreateNftForm = () => {
   }, [setError]);
 
   console.log("form image errro:", errors);
-  const onSubmitNftForm: SubmitHandler<NftFormData> = async (formData) => {
-    // const { nftImage, itemName, description, website, category } = formData;
-    try {
-      if (formData.price < listingPriceEth) {
-        setError("price", {
-          message: "Price must be great than or equal to the listing price!",
+  const onSubmitNftForm: SubmitHandler<NftFormData> = useCallback(
+    async (formData) => {
+      // const { nftImage, itemName, description, website, category } = formData;
+      try {
+        if (formData.price < listingPriceEth) {
+          setError("price", {
+            message: "Price must be great than or equal to the listing price!",
+          });
+          return;
+        }
+        const result = await createNFT({ ...formData, listingPriceEth });
+        if (result.success) {
+          router.replace("/nft/collections");
+        }
+      } catch (error: unknown | Error) {
+        console.log("Error creating nft!", error);
+        toast.error("Failed to create NFT!", {
+          duration: 5000,
+          position: "bottom-right",
         });
-        return;
       }
-      const result = await createNFT({ ...formData, listingPriceEth });
-      if (result.success) {
-        router.replace("/nft/collections");
-      }
-    } catch (error: unknown | Error) {
-      console.log("Error creating nft!", error);
-      toast.error("Failed to create NFT!", {
-        duration: 5000,
-        position: "bottom-right",
-      });
-    }
-  };
+    },
+    [createNFT, listingPriceEth, router, setError]
+  );
+
+  const handlePreview = useCallback(async () => {
+    const isValid = await trigger();
+
+    if (!isValid) return;
+
+    const values = getValues();
+    previewCtx?.setPreviewData(values);
+    router.push("/nft/create/preview");
+  }, [getValues, previewCtx, router, trigger]);
+
   return (
     <form onSubmit={handleSubmit(onSubmitNftForm)}>
       <div className="grid md:grid-cols-2 gap-6">
@@ -293,7 +311,7 @@ export const CreateNftForm = () => {
                 "Create"
               )}
             </Button>
-            <Button type="button" variant={"secondary"}>
+            <Button type="button" variant={"secondary"} onClick={handlePreview}>
               Preview
             </Button>
           </div>

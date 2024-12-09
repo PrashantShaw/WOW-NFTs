@@ -9,11 +9,19 @@ import { type ReactNode, useState } from "react";
 import { type State, WagmiProvider } from "wagmi";
 
 import { getConfig } from "./wagmi";
+import { NftFormData } from "./(root)/(NFT)/nft/create/_components/CreateNftForm";
+import { createContext } from "react";
+
+export const PreviewContext = createContext<{
+  previewData: NftFormData | undefined;
+  setPreviewData: React.Dispatch<React.SetStateAction<NftFormData | undefined>>;
+} | null>(null);
 
 export function Providers(props: {
   children: ReactNode;
   initialState?: State;
 }) {
+  const [previewData, setPreviewData] = useState<NftFormData | undefined>();
   const staleTime = 60 * 60 * 1000;
   const [config] = useState(() => getConfig());
   const [queryClient] = useState(
@@ -32,7 +40,9 @@ export function Providers(props: {
     <NextThemesProvider {...themeProps}>
       <WagmiProvider config={config} initialState={props.initialState}>
         <QueryClientProvider client={queryClient}>
-          {props.children}
+          <PreviewContext.Provider value={{ previewData, setPreviewData }}>
+            {props.children}
+          </PreviewContext.Provider>
         </QueryClientProvider>
       </WagmiProvider>
     </NextThemesProvider>
