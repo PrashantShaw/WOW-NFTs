@@ -7,8 +7,9 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { NAV_LINKS } from "@/lib/constants";
-import { Menu, Sparkles } from "lucide-react";
+import { BRAND, NAV_LINKS } from "@/lib/constants";
+import { Menu } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 // TODO: replace sidenav links with something better
 const SideNavSheet = () => {
@@ -27,12 +28,22 @@ const SideNavSheet = () => {
         <SheetHeader className="">
           <SheetTitle className=" py-6">
             <div className="flex items-center justify-center sm:justify-start space-x-2">
-              <Sparkles className="text-center" />
-              <span className="text-center">NFT Market</span>
+              <Link href="/" className="mr-6 flex items-center space-x-2">
+                <Image
+                  src={"/icon.png"}
+                  width={32}
+                  height={32}
+                  alt="brand logo"
+                />
+                <span className="text-center">{BRAND.name}</span>
+              </Link>
             </div>
           </SheetTitle>
           <SheetDescription>
             <nav className="flex flex-col space-y-4">
+              <Link href={"/"} className="transition-colors hover:text-primary">
+                Home
+              </Link>
               {NAV_LINKS.map(({ label, href }, idx) => (
                 <Link
                   key={idx}

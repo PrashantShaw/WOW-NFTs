@@ -39,7 +39,7 @@ const FeaturedNFTs = () => {
         opts={{ loop: true }}
         plugins={[carouselAutoplayPlugin.current]}
       >
-        <CarouselContent>
+        <CarouselContent className="p-1">
           {isPending ? (
             <>
               <CarouselItem className="md:basis-1/2 lg:basis-1/3">

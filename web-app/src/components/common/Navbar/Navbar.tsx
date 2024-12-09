@@ -46,6 +46,9 @@ export default function Navbar() {
           </nav>
         </div>
         <SideNavSheet />
+        <div className="md:hidden w-full">
+          <SearchModal />
+        </div>
         <NavbarActions />
       </div>
     </header>

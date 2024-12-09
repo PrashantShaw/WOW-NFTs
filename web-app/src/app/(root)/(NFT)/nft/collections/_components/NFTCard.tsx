@@ -24,7 +24,7 @@ export const NFTCard = ({ nft }: { nft: UnsoldMarketItem }) => {
             {getEthFromWei(Number(nft.price)) + " ETH"}
           </p>
           <p className="text-xs text-muted-foreground">
-            Owner: {shortedAccountAddress(nft.owner)}
+            Seller: {shortedAccountAddress(nft.seller)}
           </p>
         </div>
       </div>

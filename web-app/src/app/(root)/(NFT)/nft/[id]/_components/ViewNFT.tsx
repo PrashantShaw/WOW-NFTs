@@ -8,6 +8,7 @@ import { PinListItem } from "pinata-web3";
 type ViewNFTProps = {
   id: string;
 };
+// TODO: create buy/sell btn based on seller fo the item
 const ViewNFT = ({ id }: ViewNFTProps) => {
   const { unsoldNFTs, isPending, unsoldNFTsFetchError } = useGetUnsoldNFTsV2();
   const nftToShow = unsoldNFTs.filter(

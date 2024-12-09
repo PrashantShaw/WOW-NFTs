@@ -26,15 +26,15 @@ const NavbarActions = () => {
   const { isConnected, address } = useAccount();
   const { connectToWallet } = useConnectWallet();
   return (
-    <div className="flex flex-1 items-center justify-end space-x-4">
-      <nav className="flex items-center space-x-1">
+    <div className="flex flex-1 items-center justify-end ">
+      <nav className="flex items-center space-x-0">
         <ThemeToggler />
         {isConnected && address ? (
-          <div className="flex gap-3 items-center pl-2">
-            <Button size={"sm"} asChild>
+          <div className="flex gap-2 sm:gap-3 items-center pl-2">
+            <Button size={"sm"} asChild className="text-xs sm:text-sm">
               <Link href={"/nft/create"}>
                 Create
-                <Plus strokeWidth={3} />
+                <Plus className="stroke-2 sm:stroke-[3]" />
               </Link>
             </Button>
             <ProfileMenu address={address} />
