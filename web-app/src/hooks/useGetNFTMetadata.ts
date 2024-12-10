@@ -16,7 +16,7 @@ export const useGetNFTMetadata = (ipfsHash: string, enabled = true) => {
 
   const {
     data: pinataFileMetadata,
-    isPending: isFetchingMetadata,
+    isPending,
     error: pinataMetadataError,
   } = useQuery<{
     filesMeta: PinListItem[];
@@ -27,5 +27,9 @@ export const useGetNFTMetadata = (ipfsHash: string, enabled = true) => {
     refetchOnWindowFocus: false,
   });
 
-  return { pinataFileMetadata, isFetchingMetadata, pinataMetadataError };
+  return {
+    pinataFileMetadata,
+    isFetchingMetadata: enabled ? isPending : false,
+    pinataMetadataError,
+  };
 };

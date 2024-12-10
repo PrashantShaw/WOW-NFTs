@@ -2,11 +2,15 @@
 
 import { useGetNFTMetadata } from "@/hooks/useGetNFTMetadata";
 import { useGetUnsoldNFTsV2 } from "@/hooks/useGetUnsoldNFTsV2";
+import { usePreviewNFT } from "@/hooks/usePreviewNFT";
 import {
   NFTMarketItem,
   PinataFileMetadata,
   UnsoldMarketItem,
 } from "@/lib/definitions";
+import { NftFormData } from "../../create/_components/CreateNftForm";
+import { useMemo } from "react";
+import { useAccount } from "wagmi";
 
 type ViewNFTProps = {
   id: string;
@@ -15,18 +19,24 @@ type ViewNFTProps = {
 // TODO: create buy/sell btn based on seller fo the item
 const ViewNFT = ({ id, isPreview = false }: ViewNFTProps) => {
   const unsoldNFTsFetchEnabled = !isPreview;
+  const previewCtx = usePreviewNFT();
+  const { address } = useAccount();
   const { unsoldNFTs, isPending, unsoldNFTsFetchError } = useGetUnsoldNFTsV2(
     unsoldNFTsFetchEnabled
   );
 
-  const nftToShow = isPreview
-    ? ([] as UnsoldMarketItem[])
-    : unsoldNFTs.filter((unsoldNFT) => unsoldNFT.tokenId === id);
+  const fetchedNft = useMemo(
+    () =>
+      isPreview
+        ? ([] as UnsoldMarketItem[])
+        : unsoldNFTs.filter((unsoldNFT) => unsoldNFT.tokenId === id),
+    [id, isPreview, unsoldNFTs]
+  );
 
-  const nftMetadataFetchEnabled = !isPreview && nftToShow.length > 0;
+  const nftMetadataFetchEnabled = !isPreview && fetchedNft.length > 0;
   const { pinataFileMetadata, isFetchingMetadata, pinataMetadataError } =
     useGetNFTMetadata(
-      nftToShow.length > 0 ? nftToShow[0].ipfsHash : "",
+      fetchedNft.length > 0 ? fetchedNft[0].ipfsHash : "",
       nftMetadataFetchEnabled
     );
 
@@ -34,14 +44,43 @@ const ViewNFT = ({ id, isPreview = false }: ViewNFTProps) => {
   // console.log("pinataFileMetadata :", pinataFileMetadata);
   // console.log("pinataMetadataError :", pinataMetadataError);
 
-  const nftMetadata = pinataFileMetadata
-    ? (pinataFileMetadata.filesMeta[0].metadata.keyvalues as PinataFileMetadata)
-    : ({} as PinataFileMetadata);
+  const nftMetadata = useMemo(
+    () =>
+      pinataFileMetadata
+        ? (pinataFileMetadata.filesMeta[0].metadata
+            .keyvalues as PinataFileMetadata)
+        : ({} as PinataFileMetadata),
+    [pinataFileMetadata]
+  );
 
-  // TODO: fetch nft preview data from usePreviewNFT hook and add it here if isPreview is true
-  const nft = isPreview
-    ? ({} as NFTMarketItem)
-    : { ...nftToShow[0], ...nftMetadata };
+  const nft: NFTMarketItem = useMemo(() => {
+    if (isPreview) {
+      const { category, description, itemName, nftImage, price, website } =
+        previewCtx?.previewData ?? ({} as NftFormData);
+      const imageUrl = URL.createObjectURL(nftImage[0]);
+      const data: NFTMarketItem = {
+        tokenId: id,
+        seller: address as `0x${string}`,
+        owner: address as `0x${string}`,
+        sold: false,
+        imageUrl,
+        category,
+        description,
+        itemName,
+        price: price.toString(),
+        website,
+      };
+      return data;
+    }
+    return { ...fetchedNft[0], ...nftMetadata };
+  }, [
+    isPreview,
+    fetchedNft,
+    nftMetadata,
+    previewCtx?.previewData,
+    id,
+    address,
+  ]);
 
   if (unsoldNFTsFetchError || pinataMetadataError)
     return (

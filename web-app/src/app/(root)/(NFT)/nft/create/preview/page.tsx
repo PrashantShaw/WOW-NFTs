@@ -1,11 +1,11 @@
 import React from "react";
-import PreviewNFT from "./_components/PreviewNFT";
+import ViewNFT from "../../[id]/_components/ViewNFT";
 
 const page = () => {
   return (
     <div>
-      page
-      <PreviewNFT />
+      PREVIEW NFT PAGE
+      <ViewNFT isPreview={true} id="TEMP_ID" />
     </div>
   );
 };
