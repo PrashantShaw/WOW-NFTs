@@ -9,7 +9,7 @@ import { headers } from "next/headers";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "NFT Marketplace",
+  title: "WOW NFTs",
   description: "NFT Marketplace to create, list, buy and sell NFTs.",
 };
 

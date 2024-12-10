@@ -51,18 +51,29 @@ const nftSchemaZ = z.object({
     .gt(0, { message: "Must be a positive value!" }),
 });
 
-const defaultValues = {
+export type NftFormData = z.infer<typeof nftSchemaZ>;
+// type NftFormFieldNames = keyof NftFormData;
+
+const defaultFormValues = {
   itemName: "",
   description: "",
   nftImage: undefined,
   category: "",
   website: "",
+  price: undefined,
 };
 
-export type NftFormData = z.infer<typeof nftSchemaZ>;
-// type NftFormFieldNames = keyof NftFormData;
+type CreateNftFormProps = {
+  fromPreview: boolean;
+};
+export const CreateNftForm = ({ fromPreview }: CreateNftFormProps) => {
+  const previewCtx = usePreviewNFT();
+  const defaultValues =
+    fromPreview && previewCtx?.previewData
+      ? previewCtx?.previewData
+      : defaultFormValues;
 
-export const CreateNftForm = () => {
+  console.log("defaultValues : ", defaultValues);
   const {
     control,
     handleSubmit,
@@ -77,7 +88,6 @@ export const CreateNftForm = () => {
   });
   const [listingPriceEth, setListingPriceEth] = useState(0);
   const { createNFT, isPending } = useCreateNFT();
-  const previewCtx = usePreviewNFT();
   const router = useRouter();
 
   useEffect(() => {
@@ -139,6 +149,7 @@ export const CreateNftForm = () => {
           fieldName={"nftImage"}
           register={register}
           error={errors.nftImage}
+          imgFile={defaultValues.nftImage?.[0] ?? null}
         />
         <div className="flex flex-col gap-2">
           <Controller

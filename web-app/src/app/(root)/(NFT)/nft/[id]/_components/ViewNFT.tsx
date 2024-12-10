@@ -9,8 +9,26 @@ import {
   UnsoldMarketItem,
 } from "@/lib/definitions";
 import { NftFormData } from "../../create/_components/CreateNftForm";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useAccount } from "wagmi";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import clsx from "clsx";
+import {
+  getEthFromWei,
+  shortedAccountAddress,
+  textCapitalize,
+} from "@/lib/utils";
+import Link from "next/link";
+import {
+  ArrowLeftFromLine,
+  Copy,
+  Ellipsis,
+  ShoppingBag,
+  SquareArrowOutUpRight,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 type ViewNFTProps = {
   id: string;
@@ -20,6 +38,15 @@ type ViewNFTProps = {
 const ViewNFT = ({ id, isPreview = false }: ViewNFTProps) => {
   const unsoldNFTsFetchEnabled = !isPreview;
   const previewCtx = usePreviewNFT();
+  const router = useRouter();
+
+  (() => {
+    if (isPreview && !previewCtx?.previewData) {
+      router.replace("/nft/create");
+    }
+  })();
+
+  const [isNftImageLoading, setIsNftImageLoading] = useState(true);
   const { address } = useAccount();
   const { unsoldNFTs, isPending, unsoldNFTsFetchError } = useGetUnsoldNFTsV2(
     unsoldNFTsFetchEnabled
@@ -98,15 +125,103 @@ const ViewNFT = ({ id, isPreview = false }: ViewNFTProps) => {
     );
 
   return (
-    <div>
-      {nft.itemName}-{nft.category}
-      {isFetchingMetadata ? (
-        <p>Fetching nft metadata...</p>
-      ) : (
-        <p>
-          {nft.description} - {nft.website}
-        </p>
-      )}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-[3rem]">
+      <div className="">
+        {/* TODO: add a loader while image is be fetched */}
+        {isNftImageLoading ? (
+          <div className="grid place-content-center bg-muted aspect-[3/4] rounded-md animate-pulse">
+            <Image
+              src={"/image-placeholder.png"}
+              alt="NFT Image Placeholder"
+              width={768}
+              height={768}
+              className=" w-full"
+            />
+          </div>
+        ) : null}
+        <Image
+          src={nft.imageUrl}
+          alt="NFT image"
+          width={768}
+          height={768}
+          className={clsx(
+            "rounded-xl",
+            isNftImageLoading ? "opacity-0" : "opacity-100"
+          )}
+          onLoad={() => setIsNftImageLoading(false)}
+          onError={() => setIsNftImageLoading(false)}
+        />
+      </div>
+      <div className="">
+        <div className="flex items-center justify-between gap-2 pb-6">
+          <Badge variant="default" className="text-lg">
+            {textCapitalize(nft.category)}
+          </Badge>
+          <Button variant={"ghost"} size={"icon"}>
+            <Ellipsis />
+          </Button>
+        </div>
+        <h2 className="text-3xl font-bold">
+          {nft.itemName}{" "}
+          <span className="text-muted-foreground">#{nft.tokenId}</span>
+        </h2>
+        <div className="pt-7">
+          <p className="text-muted-foreground text-sm">Description:</p>
+          {isFetchingMetadata ? (
+            <div className="h-7 w-[80%] bg-secondary rounded-md animate-pulse" />
+          ) : (
+            <p className="font-medium text-lg">{nft.description}</p>
+          )}
+        </div>
+        <div className="pt-3">
+          <p className="text-muted-foreground text-sm">Seller:</p>
+          <p className="font-medium text-lg flex items-center gap-1">
+            {shortedAccountAddress(nft.seller)}{" "}
+            <Button size={"icon"} variant={"ghost"}>
+              <Copy size={18} />
+            </Button>
+          </p>
+        </div>
+        <div className="pt-3">
+          <p className="text-muted-foreground text-sm">Website:</p>
+          {isFetchingMetadata ? (
+            <div className="h-7 w-[80%] bg-secondary rounded-md animate-pulse" />
+          ) : (
+            <Link
+              href={nft.website}
+              className="font-medium text-lg flex items-center gap-2 hover:underline"
+              target="_blank"
+            >
+              {nft.website} <SquareArrowOutUpRight size={18} />
+            </Link>
+          )}
+        </div>
+        <div className="relative border-2 border-primary rounded-lg w-fit min-w-[16rem] mt-14 p-4">
+          <span className="absolute bg-primary top-0 translate-y-[-50%] px-2 py-1 rounded-md text-primary-foreground text-xs">
+            Current Price
+          </span>
+          <p className="font-bold text-2xl text-primary dark:text-primary-foreground">
+            {getEthFromWei(Number(nft.price))} ETH
+          </p>
+        </div>
+        <div className="grid grid-cols-2 gap-3 pt-14">
+          <Button
+            className="text-[1rem] font-medium"
+            size={"lg"}
+            variant={"default"}
+          >
+            <ShoppingBag /> Buy
+          </Button>
+          <Button
+            className="text-[1rem] font-medium"
+            size={"lg"}
+            variant={"secondary"}
+            onClick={() => router.back()}
+          >
+            <ArrowLeftFromLine /> Back
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };

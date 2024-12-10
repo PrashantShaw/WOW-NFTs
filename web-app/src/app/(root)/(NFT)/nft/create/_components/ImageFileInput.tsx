@@ -14,13 +14,15 @@ type ImageFileInputProps<FormDataType extends FieldValues> = {
   register: UseFormRegister<FormDataType>;
   fieldName: string;
   error: FieldError | undefined;
+  imgFile: File | null;
 };
 const ImageFileInput = <FormDataType extends FieldValues>({
   fieldName,
   register,
   error,
+  imgFile,
 }: ImageFileInputProps<FormDataType>) => {
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(imgFile);
   const {
     ref: registerRef,
     onChange: registerOnChange,
