@@ -20,7 +20,7 @@ import toast from "react-hot-toast";
 import { getEthFromWei, getListingPrice, textCapitalize } from "@/lib/utils";
 import useCreateNFT from "@/hooks/useCreateNFT";
 import { useRouter } from "next/navigation";
-import { LoaderCircle } from "lucide-react";
+import { LoaderCircle, ScanEye, Upload } from "lucide-react";
 import { NFT_CATEGORIES } from "@/lib/constants";
 import { usePreviewNFT } from "@/hooks/usePreviewNFT";
 
@@ -319,11 +319,13 @@ export const CreateNftForm = ({ fromPreview }: CreateNftFormProps) => {
                   <LoaderCircle className="animate-spin" /> Creating...
                 </>
               ) : (
-                "Create"
+                <>
+                  <Upload /> Create
+                </>
               )}
             </Button>
             <Button type="button" variant={"secondary"} onClick={handlePreview}>
-              Preview
+              <ScanEye /> Preview
             </Button>
           </div>
         </div>

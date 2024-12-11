@@ -18,6 +18,7 @@ import {
   copyToCLipboard,
   getEthFromWei,
   getEthPriceUsd,
+  getWeiFromEth,
   shortedAccountAddress,
   textCapitalize,
 } from "@/lib/utils";
@@ -28,10 +29,12 @@ import {
   Ellipsis,
   EqualApproximately,
   Flag,
+  Pencil,
   RefreshCcw,
   Share2,
   ShoppingBag,
   SquareArrowOutUpRight,
+  Upload,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -60,9 +63,7 @@ const ViewNFT = ({ id, isPreview = false }: ViewNFTProps) => {
   const router = useRouter();
 
   (() => {
-    if (isPreview && !previewCtx?.previewData) {
-      router.replace("/nft/create");
-    }
+    if (isPreview && !previewCtx?.previewData) router.replace("/nft/create");
   })();
 
   const [isNftImageLoading, setIsNftImageLoading] = useState(true);
@@ -100,7 +101,7 @@ const ViewNFT = ({ id, isPreview = false }: ViewNFTProps) => {
   );
 
   const nft: NFTMarketItem = useMemo(() => {
-    if (isPreview) {
+    if (isPreview && previewCtx?.previewData) {
       const { category, description, itemName, nftImage, price, website } =
         previewCtx?.previewData ?? ({} as NftFormData);
       const imageUrl = URL.createObjectURL(nftImage[0]);
@@ -113,7 +114,7 @@ const ViewNFT = ({ id, isPreview = false }: ViewNFTProps) => {
         category,
         description,
         itemName,
-        price: price.toString(),
+        price: getWeiFromEth(price).toString(),
         website,
       };
       return data;
@@ -157,6 +158,10 @@ const ViewNFT = ({ id, isPreview = false }: ViewNFTProps) => {
       });
     }
   }, [nft.seller]);
+
+  const handleBackToCreateNftForm = useCallback(async () => {
+    router.push("/nft/create?from-preview=true");
+  }, [router]);
 
   if (unsoldNFTsFetchError || pinataMetadataError)
     return (
@@ -309,23 +314,43 @@ const ViewNFT = ({ id, isPreview = false }: ViewNFTProps) => {
             1 ETH <EqualApproximately size={14} /> ${ONE_ETH_PRICE_USD}
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-3 pt-14">
-          <Button
-            className="text-[1rem] font-medium"
-            size={"lg"}
-            variant={"default"}
-          >
-            <ShoppingBag /> Buy
-          </Button>
-          <Button
-            className="text-[1rem] font-medium"
-            size={"lg"}
-            variant={"secondary"}
-            onClick={() => router.back()}
-          >
-            <ArrowLeftFromLine /> Back
-          </Button>
-        </div>
+        {isPreview ? (
+          <div className="grid grid-cols-2 gap-3 pt-14">
+            <Button
+              className="text-[1rem] font-medium"
+              size={"lg"}
+              variant={"default"}
+            >
+              <Upload /> Create
+            </Button>
+            <Button
+              className="text-[1rem] font-medium"
+              size={"lg"}
+              variant={"secondary"}
+              onClick={handleBackToCreateNftForm}
+            >
+              <Pencil /> Edit
+            </Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3 pt-14">
+            <Button
+              className="text-[1rem] font-medium"
+              size={"lg"}
+              variant={"default"}
+            >
+              <ShoppingBag /> Buy
+            </Button>
+            <Button
+              className="text-[1rem] font-medium"
+              size={"lg"}
+              variant={"secondary"}
+              onClick={() => router.back()}
+            >
+              <ArrowLeftFromLine /> Back
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
