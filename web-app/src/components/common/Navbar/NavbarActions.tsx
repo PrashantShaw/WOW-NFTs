@@ -29,8 +29,9 @@ const NavbarActions = () => {
     <div className="flex flex-1 items-center justify-end ">
       <nav className="flex items-center space-x-0">
         <ThemeToggler />
+        <div className="w-2 md:w-3" />
         {isConnected && address ? (
-          <div className="flex gap-2 sm:gap-3 items-center pl-2">
+          <div className="flex gap-2 sm:gap-3 items-center">
             <Button size={"sm"} asChild className="text-xs sm:text-sm">
               <Link href={"/nft/create"}>
                 Create
@@ -40,17 +41,15 @@ const NavbarActions = () => {
             <ProfileMenu address={address} />
           </div>
         ) : (
-          <>
-            <Button size={"sm"} onClick={connectToWallet} variant={"default"}>
-              <Image
-                src={"/metamask-icon.webp"}
-                alt="Metamask Icon"
-                width={20}
-                height={20}
-              />
-              Connect Wallet
-            </Button>
-          </>
+          <Button size={"sm"} onClick={connectToWallet} variant={"default"}>
+            <Image
+              src={"/metamask-icon.webp"}
+              alt="Metamask Icon"
+              width={20}
+              height={20}
+            />
+            Connect Wallet
+          </Button>
         )}
       </nav>
     </div>

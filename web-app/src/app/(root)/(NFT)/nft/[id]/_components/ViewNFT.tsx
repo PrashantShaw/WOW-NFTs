@@ -9,13 +9,15 @@ import {
   UnsoldMarketItem,
 } from "@/lib/definitions";
 import { NftFormData } from "../../create/_components/CreateNftForm";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useAccount } from "wagmi";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import {
+  copyToCLipboard,
   getEthFromWei,
+  getEthPriceUsd,
   shortedAccountAddress,
   textCapitalize,
 } from "@/lib/utils";
@@ -24,11 +26,28 @@ import {
   ArrowLeftFromLine,
   Copy,
   Ellipsis,
+  EqualApproximately,
+  Flag,
+  RefreshCcw,
+  Share2,
   ShoppingBag,
   SquareArrowOutUpRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import toast from "react-hot-toast";
 
 type ViewNFTProps = {
   id: string;
@@ -109,6 +128,36 @@ const ViewNFT = ({ id, isPreview = false }: ViewNFTProps) => {
     address,
   ]);
 
+  const ONE_ETH_PRICE_USD = useMemo(() => getEthPriceUsd(), []);
+
+  const handleShareNft = useCallback(async () => {
+    const nftShareLink = window.location.href;
+    const copid = await copyToCLipboard(nftShareLink);
+    if (copid) {
+      toast.success("Share link copied to clipboard!", {
+        position: "bottom-right",
+      });
+    } else {
+      toast.error("Failed copy share link to clipboard!", {
+        position: "bottom-right",
+      });
+    }
+  }, []);
+
+  const handleCopySellerAddress = useCallback(async () => {
+    const sellerAddress = nft.seller;
+    const copid = await copyToCLipboard(sellerAddress);
+    if (copid) {
+      toast.success("Seller's Address Copied!", {
+        position: "bottom-right",
+      });
+    } else {
+      toast.error("Failed copy seller's address!", {
+        position: "bottom-right",
+      });
+    }
+  }, [nft.seller]);
+
   if (unsoldNFTsFetchError || pinataMetadataError)
     return (
       <div className="text-center text-red-500 font-semibold pt-10">
@@ -125,9 +174,8 @@ const ViewNFT = ({ id, isPreview = false }: ViewNFTProps) => {
     );
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-[3rem]">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-[4rem]">
       <div className="">
-        {/* TODO: add a loader while image is be fetched */}
         {isNftImageLoading ? (
           <div className="grid place-content-center bg-muted aspect-[3/4] rounded-md animate-pulse">
             <Image
@@ -157,9 +205,51 @@ const ViewNFT = ({ id, isPreview = false }: ViewNFTProps) => {
           <Badge variant="default" className="text-lg">
             {textCapitalize(nft.category)}
           </Badge>
-          <Button variant={"ghost"} size={"icon"}>
-            <Ellipsis />
-          </Button>
+          <div className="flex items-center gap-0">
+            <TooltipProvider delayDuration={300}>
+              <Tooltip>
+                <TooltipTrigger>
+                  <Button
+                    variant={"ghost"}
+                    size={"icon"}
+                    onClick={handleShareNft}
+                  >
+                    <Share2 />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Share</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger>
+                <TooltipProvider delayDuration={300}>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Button variant={"ghost"} size={"icon"}>
+                        <Ellipsis />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>More</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => router.refresh()}>
+                  <RefreshCcw />
+                  Refresh Metadata
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Flag />
+                  Report
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
         <h2 className="text-3xl font-bold">
           {nft.itemName}{" "}
@@ -177,7 +267,11 @@ const ViewNFT = ({ id, isPreview = false }: ViewNFTProps) => {
           <p className="text-muted-foreground text-sm">Seller:</p>
           <p className="font-medium text-lg flex items-center gap-1">
             {shortedAccountAddress(nft.seller)}{" "}
-            <Button size={"icon"} variant={"ghost"}>
+            <Button
+              size={"icon"}
+              variant={"ghost"}
+              onClick={handleCopySellerAddress}
+            >
               <Copy size={18} />
             </Button>
           </p>
@@ -189,7 +283,7 @@ const ViewNFT = ({ id, isPreview = false }: ViewNFTProps) => {
           ) : (
             <Link
               href={nft.website}
-              className="font-medium text-lg flex items-center gap-2 hover:underline"
+              className="font-medium text-lg flex items-center gap-2 hover:underline w-fit"
               target="_blank"
             >
               {nft.website} <SquareArrowOutUpRight size={18} />
@@ -200,8 +294,19 @@ const ViewNFT = ({ id, isPreview = false }: ViewNFTProps) => {
           <span className="absolute bg-primary top-0 translate-y-[-50%] px-2 py-1 rounded-md text-primary-foreground text-xs">
             Current Price
           </span>
-          <p className="font-bold text-2xl text-primary dark:text-primary-foreground">
-            {getEthFromWei(Number(nft.price))} ETH
+          <p className="font-bold text-2xl text-primary dark:text-primary-foreground flex items-center gap-3">
+            {getEthFromWei(Number(nft.price))} ETH{" "}
+            <span className="text-lg text-muted-foreground flex items-center gap-1 font-normal">
+              <EqualApproximately size={18} /> $
+              {(ONE_ETH_PRICE_USD * getEthFromWei(Number(nft.price))).toFixed(
+                2
+              )}
+            </span>
+          </p>
+        </div>
+        <div className="pt-1">
+          <p className="text-sm text-muted-foreground flex items-center gap-1">
+            1 ETH <EqualApproximately size={14} /> ${ONE_ETH_PRICE_USD}
           </p>
         </div>
         <div className="grid grid-cols-2 gap-3 pt-14">

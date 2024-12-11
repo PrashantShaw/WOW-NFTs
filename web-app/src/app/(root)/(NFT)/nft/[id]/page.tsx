@@ -3,8 +3,7 @@ import ViewNFT from "./_components/ViewNFT";
 
 const page = ({ params }: { params: { id: string } }) => {
   return (
-    <div>
-      VIEW NFT PAGE
+    <div className="pt-[4rem]">
       <ViewNFT id={params.id} isPreview={false} />
     </div>
   );

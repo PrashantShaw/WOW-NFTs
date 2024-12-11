@@ -30,7 +30,7 @@ export default function Navbar() {
         isScrolled ? "shadow" : ""
       )}
     >
-      <div className="container flex h-14 items-center px-6 mx-auto gap-3">
+      <div className="container flex h-14 items-center px-6 mx-auto gap-2 md:gap-3">
         <div className="mr-4 hidden md:flex">
           <Link href="/" className="mr-6 flex items-center space-x-2">
             <Image src={"/icon.png"} width={32} height={32} alt="brand logo" />

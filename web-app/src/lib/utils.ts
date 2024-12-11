@@ -124,3 +124,12 @@ export const applyFilters = (
 
   return SortedByTypeNFTs;
 };
+
+export const copyToCLipboard = async (text: string) => {
+  if (!window || !window.navigator) return false;
+
+  await navigator.clipboard.writeText(text);
+  return true;
+};
+
+export const getEthPriceUsd = () => 3799.66;
