@@ -11,7 +11,7 @@ import {
 import { NftFormData } from "../../create/_components/CreateNftForm";
 import { useCallback, useMemo, useState } from "react";
 import { useAccount } from "wagmi";
-import Image from "next/image";
+import NextImg from "next/image";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import {
@@ -28,6 +28,7 @@ import {
   Copy,
   Ellipsis,
   EqualApproximately,
+  Eye,
   Flag,
   Pencil,
   RefreshCcw,
@@ -51,6 +52,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import toast from "react-hot-toast";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
 type ViewNFTProps = {
   id: string;
@@ -183,27 +185,46 @@ const ViewNFT = ({ id, isPreview = false }: ViewNFTProps) => {
       <div className="">
         {isNftImageLoading ? (
           <div className="grid place-content-center bg-muted aspect-[3/4] rounded-md animate-pulse">
-            <Image
+            <NextImg
               src={"/image-placeholder.png"}
               alt="NFT Image Placeholder"
               width={768}
               height={768}
-              className=" w-full"
+              className=" w-full dark:opacity-10 opacity-50"
             />
           </div>
         ) : null}
-        <Image
-          src={nft.imageUrl}
-          alt="NFT image"
-          width={768}
-          height={768}
-          className={clsx(
-            "rounded-xl",
-            isNftImageLoading ? "opacity-0" : "opacity-100"
-          )}
-          onLoad={() => setIsNftImageLoading(false)}
-          onError={() => setIsNftImageLoading(false)}
-        />
+        <Dialog>
+          <DialogTrigger>
+            <div className="relative z-20 group/nft-img">
+              <div className="absolute inset-0 hover:bg-black/10 transition-all rounded-xl" />
+              <Eye className="absolute top-5 right-5 z-20 opacity-50 transition-all group-hover/nft-img:opacity-100" />
+              <NextImg
+                src={nft.imageUrl}
+                alt="NFT image"
+                width={768}
+                height={768}
+                className={clsx(
+                  "rounded-xl z-10",
+                  isNftImageLoading ? "opacity-0 h-0" : "opacity-100 h-full"
+                )}
+                onLoad={() => setIsNftImageLoading(false)}
+                onError={() => setIsNftImageLoading(false)}
+              />
+            </div>
+          </DialogTrigger>
+          <DialogContent className="border-0 md:w-fit max-w-[95%] p-0 bg-transparent shadow-none">
+            <div className="flex w-full h-fit max-h-screen ">
+              <NextImg
+                src={nft.imageUrl}
+                alt="NFT image"
+                width={1768}
+                height={1768}
+                className="max-w-full max-h-full object-contain"
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
       <div className="">
         <div className="flex items-center justify-between gap-2 pb-6">

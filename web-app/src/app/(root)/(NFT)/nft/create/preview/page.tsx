@@ -5,11 +5,12 @@ const page = () => {
   return (
     <div className="pt-[2.5rem]">
       <h1 className="text-5xl font-bold mb-4">NFT Preview</h1>
-      <p className="mb-10">
+      <p className="mb-10 text-balance">
         This is how your NFT will appear on the marketplace once listed. If you
         are happy with your creation then proceed below to create or continue
-        editing by clicking back button.
+        editing by clicking edit button.
       </p>
+      <div className="border-t pb-14" />
       <ViewNFT isPreview={true} id="TEMP_ID" />
     </div>
   );
