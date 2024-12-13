@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -11,10 +13,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   AlignVerticalJustifyEnd,
-  CircleHelp,
+  LayoutDashboard,
+  List,
   Plus,
   Unplug,
-  User,
 } from "lucide-react";
 import { ThemeToggler } from "../ThemeToggler";
 import Link from "next/link";
@@ -22,9 +24,11 @@ import { useAccount, useDisconnect } from "wagmi";
 import Image from "next/image";
 import useConnectWallet from "@/hooks/useConnectWallet";
 import { shortedAccountAddress } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 const NavbarActions = () => {
   const { isConnected, address } = useAccount();
   const { connectToWallet } = useConnectWallet();
+
   return (
     <div className="flex flex-1 items-center justify-end ">
       <nav className="flex items-center space-x-0">
@@ -58,28 +62,42 @@ const NavbarActions = () => {
 
 const ProfileMenu = ({ address }: { address: `0x${string}` }) => {
   const { disconnect } = useDisconnect();
+  const router = useRouter();
+
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Avatar>
           <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-          <AvatarFallback>CN</AvatarFallback>
+          <AvatarFallback>0x</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuLabel>{shortedAccountAddress(address)}</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
-          <User />
-          My Profile
+        <DropdownMenuItem
+          onClick={() => {
+            router.push("/user/dashboard");
+          }}
+        >
+          <LayoutDashboard />
+          Dashboard
         </DropdownMenuItem>
-        <DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => {
+            router.push("/user/dashboard#my-nfts");
+          }}
+        >
           <AlignVerticalJustifyEnd />
-          My Items
+          My NFTs
         </DropdownMenuItem>
-        <DropdownMenuItem>
-          <CircleHelp />
-          Help
+        <DropdownMenuItem
+          onClick={() => {
+            router.push("/user/dashboard#my-listings");
+          }}
+        >
+          <List />
+          My Listings
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => disconnect()}>
           <Unplug />

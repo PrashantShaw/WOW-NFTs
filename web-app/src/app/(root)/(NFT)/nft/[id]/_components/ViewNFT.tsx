@@ -55,6 +55,7 @@ import {
 import toast from "react-hot-toast";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import useCreateNFT from "@/hooks/useCreateNFT";
+import useBuyNFT from "@/hooks/useBuyNFT";
 
 type ViewNFTProps = {
   id: string;
@@ -82,6 +83,8 @@ const ViewNFT = ({ id, isPreview = false }: ViewNFTProps) => {
     isFetchingListingPrice,
     listingPriceFetchError,
   } = useCreateNFT();
+
+  const { buyNFT, isBuyingNFT } = useBuyNFT();
 
   const fetchedNft = useMemo(
     () =>
@@ -162,19 +165,18 @@ const ViewNFT = ({ id, isPreview = false }: ViewNFTProps) => {
     }
   }, []);
 
-  const handleCopySellerAddress = useCallback(async () => {
-    const sellerAddress = nft.seller;
-    const copid = await copyToCLipboard(sellerAddress);
+  const handleCopyAccountAddress = useCallback(async (address: string) => {
+    const copid = await copyToCLipboard(address);
     if (copid) {
-      toast.success("Seller's Address Copied!", {
+      toast.success("Address Copied!", {
         position: "bottom-right",
       });
     } else {
-      toast.error("Failed copy seller's address!", {
+      toast.error("Failed to copy address!", {
         position: "bottom-right",
       });
     }
-  }, [nft.seller]);
+  }, []);
 
   const handleBackToCreateNftForm = useCallback(async () => {
     router.push("/nft/create?from-preview=true");
@@ -198,6 +200,23 @@ const ViewNFT = ({ id, isPreview = false }: ViewNFTProps) => {
       });
     }
   }, [createNFT, isPreview, listingPriceWei, previewCtx?.previewData, router]);
+
+  const handleBuyNFT = useCallback(async () => {
+    if (isPreview) return;
+
+    try {
+      const result = await buyNFT(nft.tokenId, nft.price);
+      if (result.success) {
+        router.replace("/nft/collections");
+      }
+    } catch (error) {
+      console.log("Error Buying nft!", error);
+      toast.error("Failed to Buy NFT!", {
+        duration: 5000,
+        position: "bottom-right",
+      });
+    }
+  }, [buyNFT, isPreview, nft.price, nft.tokenId, router]);
 
   if (unsoldNFTsFetchError || pinataMetadataError)
     return (
@@ -323,18 +342,33 @@ const ViewNFT = ({ id, isPreview = false }: ViewNFTProps) => {
             <p className="font-medium text-lg">{nft.description}</p>
           )}
         </div>
-        <div className="pt-3">
-          <p className="text-muted-foreground text-sm">Seller:</p>
-          <p className="font-medium text-lg flex items-center gap-1">
-            {shortedAccountAddress(nft.seller)}{" "}
-            <Button
-              size={"icon"}
-              variant={"ghost"}
-              onClick={handleCopySellerAddress}
-            >
-              <Copy size={18} />
-            </Button>
-          </p>
+        <div className="pt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div className="">
+            <p className="text-muted-foreground text-sm">Seller:</p>
+            <p className="font-medium text-lg flex items-center gap-1">
+              {shortedAccountAddress(nft.seller)}{" "}
+              <Button
+                size={"icon"}
+                variant={"ghost"}
+                onClick={() => handleCopyAccountAddress(nft.seller)}
+              >
+                <Copy size={18} />
+              </Button>
+            </p>
+          </div>
+          <div className="">
+            <p className="text-muted-foreground text-sm">Owner:</p>
+            <p className="font-medium text-lg flex items-center gap-1">
+              {shortedAccountAddress(nft.owner)}{" "}
+              <Button
+                size={"icon"}
+                variant={"ghost"}
+                onClick={() => handleCopyAccountAddress(nft.owner)}
+              >
+                <Copy size={18} />
+              </Button>
+            </p>
+          </div>
         </div>
         <div className="pt-3">
           <p className="text-muted-foreground text-sm">Website:</p>
@@ -403,8 +437,18 @@ const ViewNFT = ({ id, isPreview = false }: ViewNFTProps) => {
               className="text-[1rem] font-medium"
               size={"lg"}
               variant={"default"}
+              onClick={handleBuyNFT}
+              disabled={isBuyingNFT}
             >
-              <ShoppingBag /> Buy
+              {isBuyingNFT ? (
+                <>
+                  <LoaderCircle className="animate-spin" />
+                </>
+              ) : (
+                <>
+                  <ShoppingBag /> Buy
+                </>
+              )}
             </Button>
             <Button
               className="text-[1rem] font-medium"
