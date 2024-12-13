@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import { z } from "zod";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import toast from "react-hot-toast";
-import { getEthFromWei, getListingPrice, textCapitalize } from "@/lib/utils";
+import { getEthFromWei, textCapitalize } from "@/lib/utils";
 import useCreateNFT from "@/hooks/useCreateNFT";
 import { useRouter } from "next/navigation";
 import { LoaderCircle, ScanEye, Upload } from "lucide-react";
@@ -86,25 +86,24 @@ export const CreateNftForm = ({ fromPreview }: CreateNftFormProps) => {
     resolver: zodResolver(nftSchemaZ),
     defaultValues,
   });
-  const [listingPriceEth, setListingPriceEth] = useState(0);
-  const { createNFT, isPending } = useCreateNFT();
+  const { createNFT, isCreatingNFT, listingPriceWei, listingPriceFetchError } =
+    useCreateNFT();
+
+  const listingPriceEth = useMemo(
+    () => (listingPriceWei ? getEthFromWei(Number(listingPriceWei)) : 0),
+    [listingPriceWei]
+  );
   const router = useRouter();
 
   useEffect(() => {
-    (async () => {
-      try {
-        const listingPriceWei = await getListingPrice();
-        const listingPriceEth = getEthFromWei(listingPriceWei);
-        setListingPriceEth(listingPriceEth);
-      } catch (error) {
-        console.log("Error fetching listing price ::", error);
-        toast.error("Error fetching Listing Price!", {
-          duration: 5000,
-          position: "bottom-right",
-        });
-      }
-    })().catch(() => {});
-  }, [setError]);
+    if (listingPriceFetchError) {
+      console.log("Error fetching listing price ::", listingPriceFetchError);
+      toast.error("Error fetching Listing Price!", {
+        duration: 5000,
+        position: "bottom-right",
+      });
+    }
+  }, [listingPriceFetchError]);
 
   console.log("form image errro:", errors);
   const onSubmitNftForm: SubmitHandler<NftFormData> = useCallback(
@@ -313,8 +312,8 @@ export const CreateNftForm = ({ fromPreview }: CreateNftFormProps) => {
 
           <div className="h-2" />
           <div className="grid grid-cols-2 gap-4">
-            <Button type="submit" disabled={isPending}>
-              {isPending ? (
+            <Button type="submit" disabled={isCreatingNFT}>
+              {isCreatingNFT ? (
                 <>
                   <LoaderCircle className="animate-spin" /> Creating...
                 </>

@@ -1,7 +1,7 @@
 "use client";
 import { LOCALSTORAGE_KEYS, NFT_CONTRACT_CONFIG } from "@/lib/constants";
 import { useCallback, useState } from "react";
-import { useWriteContract } from "wagmi";
+import { useReadContract, useWriteContract } from "wagmi";
 import { QueryKey, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import {
@@ -22,11 +22,22 @@ type CreateNFTFormData = {
   listingPriceEth: number;
 } & NftFormData;
 const useCreateNFT = () => {
-  const [isPending, setIsPending] = useState(false);
+  const [isCreatingNFT, setIsCreatingNFT] = useState(false);
   const { id: requiredChainId } = getRequiredEthChain();
   const { getItem } = useLocalStorage();
   const queryClient = useQueryClient();
   const { writeContractAsync } = useWriteContract();
+  const {
+    data: listingPriceWei,
+    isPending: isFetchingListingPrice,
+    error: listingPriceFetchError,
+  } = useReadContract({
+    address: NFT_CONTRACT_CONFIG.address,
+    abi: NFT_CONTRACT_CONFIG.abi,
+    functionName: "getListingPrice",
+    chainId: getRequiredEthChain().id,
+    query: { enabled: true, refetchOnWindowFocus: false },
+  });
   const { verifyConnectionAndChain } = useDataAccessLayer();
 
   const createNFT = useCallback(
@@ -44,7 +55,7 @@ const useCreateNFT = () => {
 
       try {
         verifyConnectionAndChain();
-        setIsPending(true);
+        setIsCreatingNFT(true);
 
         const formDataBody = new FormData();
         formDataBody.append("nftImage", nftImage[0]);
@@ -99,7 +110,7 @@ const useCreateNFT = () => {
           duration: 5000,
         });
       } finally {
-        setIsPending(false);
+        setIsCreatingNFT(false);
       }
 
       return { success };
@@ -114,8 +125,11 @@ const useCreateNFT = () => {
   );
 
   return {
-    isPending,
+    isCreatingNFT,
     createNFT,
+    listingPriceWei,
+    isFetchingListingPrice,
+    listingPriceFetchError,
   };
 };
 

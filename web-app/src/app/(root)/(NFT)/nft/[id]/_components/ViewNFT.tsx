@@ -9,7 +9,7 @@ import {
   UnsoldMarketItem,
 } from "@/lib/definitions";
 import { NftFormData } from "../../create/_components/CreateNftForm";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAccount } from "wagmi";
 import NextImg from "next/image";
 import { useRouter } from "next/navigation";
@@ -30,6 +30,7 @@ import {
   EqualApproximately,
   Eye,
   Flag,
+  LoaderCircle,
   Pencil,
   RefreshCcw,
   Share2,
@@ -53,6 +54,7 @@ import {
 } from "@/components/ui/tooltip";
 import toast from "react-hot-toast";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import useCreateNFT from "@/hooks/useCreateNFT";
 
 type ViewNFTProps = {
   id: string;
@@ -73,6 +75,13 @@ const ViewNFT = ({ id, isPreview = false }: ViewNFTProps) => {
   const { unsoldNFTs, isPending, unsoldNFTsFetchError } = useGetUnsoldNFTsV2(
     unsoldNFTsFetchEnabled
   );
+  const {
+    createNFT,
+    isCreatingNFT,
+    listingPriceWei,
+    isFetchingListingPrice,
+    listingPriceFetchError,
+  } = useCreateNFT();
 
   const fetchedNft = useMemo(
     () =>
@@ -89,9 +98,15 @@ const ViewNFT = ({ id, isPreview = false }: ViewNFTProps) => {
       nftMetadataFetchEnabled
     );
 
-  // console.log("isFetchingMetadata :", isFetchingMetadata);
-  // console.log("pinataFileMetadata :", pinataFileMetadata);
-  // console.log("pinataMetadataError :", pinataMetadataError);
+  useEffect(() => {
+    if (listingPriceFetchError) {
+      console.log("Error fetching listing price ::", listingPriceFetchError);
+      toast.error("Error fetching Listing Price!", {
+        duration: 5000,
+        position: "bottom-right",
+      });
+    }
+  }, [listingPriceFetchError]);
 
   const nftMetadata = useMemo(
     () =>
@@ -164,6 +179,25 @@ const ViewNFT = ({ id, isPreview = false }: ViewNFTProps) => {
   const handleBackToCreateNftForm = useCallback(async () => {
     router.push("/nft/create?from-preview=true");
   }, [router]);
+
+  const handleCreateNFT = useCallback(async () => {
+    if (!isPreview || !previewCtx?.previewData) return;
+
+    const formData = previewCtx?.previewData;
+    const listingPriceEth = getEthFromWei(Number(listingPriceWei));
+    try {
+      const result = await createNFT({ ...formData, listingPriceEth });
+      if (result.success) {
+        router.replace("/nft/collections");
+      }
+    } catch (error: unknown | Error) {
+      console.log("Error creating nft!", error);
+      toast.error("Failed to create NFT!", {
+        duration: 5000,
+        position: "bottom-right",
+      });
+    }
+  }, [createNFT, isPreview, listingPriceWei, previewCtx?.previewData, router]);
 
   if (unsoldNFTsFetchError || pinataMetadataError)
     return (
@@ -341,8 +375,18 @@ const ViewNFT = ({ id, isPreview = false }: ViewNFTProps) => {
               className="text-[1rem] font-medium"
               size={"lg"}
               variant={"default"}
+              onClick={handleCreateNFT}
+              disabled={isCreatingNFT || isFetchingListingPrice}
             >
-              <Upload /> Create
+              {isCreatingNFT ? (
+                <>
+                  <LoaderCircle className="animate-spin" /> Creating...
+                </>
+              ) : (
+                <>
+                  <Upload /> Create
+                </>
+              )}
             </Button>
             <Button
               className="text-[1rem] font-medium"
