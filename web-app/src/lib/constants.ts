@@ -119,3 +119,5 @@ export const SORT_BY_TYPES = [
     iconName: ArrowDownZA,
   },
 ];
+
+export const RANK_MEDALS = ["🥇", "🥈", "🥉"];

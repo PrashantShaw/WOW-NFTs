@@ -1,7 +1,13 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { ETH_CHAINS, NFT_CONTRACT_CONFIG, WEI_IN_ONE_ETH } from "./constants";
-import { ETH_NETWORKS, NFT, RawNFT, UnsoldMarketItem } from "./definitions";
+import {
+  ETH_NETWORKS,
+  NFT,
+  RawNFT,
+  TopCreator,
+  UnsoldMarketItem,
+} from "./definitions";
 import { readContract } from "@wagmi/core";
 import { getConfig } from "@/app/wagmi";
 
@@ -133,3 +139,38 @@ export const copyToCLipboard = async (text: string) => {
 };
 
 export const getEthPriceUsd = () => 3799.66;
+
+export const getTopCreators = (
+  unsoldNFTs: UnsoldMarketItem[],
+  count = 10
+): TopCreator[] => {
+  const topCreatorsMap = new Map<`0x${string}`, TopCreator>();
+  unsoldNFTs.forEach((nft) => {
+    if (topCreatorsMap.has(nft.seller)) {
+      const creatorObj = topCreatorsMap.get(nft.seller);
+      const listedNftsTotalPriceWei =
+        (creatorObj?.listedNftsTotalPriceWei ?? 0) + Number(nft.price);
+      const listedCount = (creatorObj?.listedCount ?? 0) + 1;
+      const perNftAveragePriceWei = listedNftsTotalPriceWei / listedCount;
+      topCreatorsMap.set(nft.seller, {
+        address: nft.seller,
+        listedNftsTotalPriceWei,
+        listedCount,
+        perNftAveragePriceWei,
+      });
+    } else {
+      topCreatorsMap.set(nft.seller, {
+        address: nft.seller,
+        listedNftsTotalPriceWei: Number(nft.price),
+        listedCount: 1,
+        perNftAveragePriceWei: Number(nft.price),
+      });
+    }
+  });
+  const topCreatorsArr = Array.from(topCreatorsMap)
+    .reduce((acc, curr) => [...acc, curr[1]], [] as TopCreator[])
+    .sort((a, b) => b.listedNftsTotalPriceWei - a.listedNftsTotalPriceWei)
+    .slice(0, count);
+
+  return topCreatorsArr;
+};

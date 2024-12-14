@@ -49,3 +49,10 @@ export type NFTFileUploadResponseData = {
   ipfsHash: string;
   isDuplicate: string;
 };
+
+export type TopCreator = {
+  address: `0x${string}`;
+  listedNftsTotalPriceWei: number;
+  listedCount: number;
+  perNftAveragePriceWei: number;
+};
