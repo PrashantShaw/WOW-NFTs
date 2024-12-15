@@ -47,7 +47,7 @@ export const NFT_ABI = [
     outputs: [
       {
         internalType: "uint256",
-        name: "tokenId",
+        name: "",
         type: "uint256",
       },
     ],
@@ -235,44 +235,6 @@ export const NFT_ABI = [
     anonymous: false,
     inputs: [
       {
-        indexed: false,
-        internalType: "uint256",
-        name: "_tokenId",
-        type: "uint256",
-      },
-    ],
-    name: "MetadataUpdate",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "from",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "to",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "uint256",
-        name: "tokenId",
-        type: "uint256",
-      },
-    ],
-    name: "Transfer",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
         indexed: true,
         internalType: "uint256",
         name: "tokenId",
@@ -303,7 +265,20 @@ export const NFT_ABI = [
         type: "bool",
       },
     ],
-    name: "idMarketItemCreated",
+    name: "MarketItemCreated",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "_tokenId",
+        type: "uint256",
+      },
+    ],
+    name: "MetadataUpdate",
     type: "event",
   },
   {
@@ -319,7 +294,7 @@ export const NFT_ABI = [
         type: "uint256",
       },
     ],
-    name: "reSellToken",
+    name: "resellToken",
     outputs: [],
     stateMutability: "payable",
     type: "function",
@@ -394,6 +369,31 @@ export const NFT_ABI = [
     type: "function",
   },
   {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "from",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "to",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "tokenId",
+        type: "uint256",
+      },
+    ],
+    name: "Transfer",
+    type: "event",
+  },
+  {
     inputs: [
       {
         internalType: "address",
@@ -426,7 +426,7 @@ export const NFT_ABI = [
     ],
     name: "updateListingPrice",
     outputs: [],
-    stateMutability: "payable",
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -460,12 +460,12 @@ export const NFT_ABI = [
             type: "uint256",
           },
           {
-            internalType: "address payable",
+            internalType: "address",
             name: "seller",
             type: "address",
           },
           {
-            internalType: "address payable",
+            internalType: "address",
             name: "owner",
             type: "address",
           },
@@ -505,12 +505,12 @@ export const NFT_ABI = [
             type: "uint256",
           },
           {
-            internalType: "address payable",
+            internalType: "address",
             name: "seller",
             type: "address",
           },
           {
-            internalType: "address payable",
+            internalType: "address",
             name: "owner",
             type: "address",
           },
@@ -539,7 +539,18 @@ export const NFT_ABI = [
     type: "function",
   },
   {
-    inputs: [],
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "startIndex",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "limit",
+        type: "uint256",
+      },
+    ],
     name: "fetchUnsoldMarketItem",
     outputs: [
       {
@@ -550,12 +561,12 @@ export const NFT_ABI = [
             type: "uint256",
           },
           {
-            internalType: "address payable",
+            internalType: "address",
             name: "seller",
             type: "address",
           },
           {
-            internalType: "address payable",
+            internalType: "address",
             name: "owner",
             type: "address",
           },

@@ -1,13 +1,19 @@
 "use client";
 
+import { useUserNFTs } from "@/hooks/useUserNFTs";
 import { copyToCLipboard, shortedAccountAddress } from "@/lib/utils";
 import { Copy } from "lucide-react";
+import { useParams } from "next/navigation";
 import { useCallback } from "react";
 import toast from "react-hot-toast";
 import { useAccount } from "wagmi";
 
-const DashboardPage = () => {
+const Profile = () => {
   const { address } = useAccount();
+  const params = useParams<{ account: `0x${string}` }>();
+  const account = params.account || address;
+  const { userListedNFTs, userPurchasedNFTs } = useUserNFTs(account);
+  console.log("@@@@@@@@@@@@@@@@@", userListedNFTs, userPurchasedNFTs);
   const handleCopyAccountAddress = useCallback(async (address: string) => {
     const copid = await copyToCLipboard(address);
     if (copid) {
@@ -67,4 +73,4 @@ const DashboardPage = () => {
   );
 };
 
-export default DashboardPage;
+export default Profile;

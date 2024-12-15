@@ -5,13 +5,14 @@ import {
   parseNFT,
   splitTokenUri,
 } from "@/lib/utils";
-import { LOCALSTORAGE_KEYS, NFT_CONTRACT_CONFIG } from "@/lib/constants";
+import { NFT_CONTRACT_CONFIG } from "@/lib/constants";
 import { RawNFT, UnsoldMarketItem } from "@/lib/definitions";
 import { useMemo } from "react";
 import { useReadContract } from "wagmi";
-import useLocalStorage from "./useLocalStorage";
 
 export const useGetUnsoldNFTsV2 = (enabled = true) => {
+  const PAGE_INDEX = 0;
+  const LIMIT = 100;
   const {
     data: rawNFTs,
     isPending: isFetchingUnsoldNFTs,
@@ -22,12 +23,12 @@ export const useGetUnsoldNFTsV2 = (enabled = true) => {
     address: NFT_CONTRACT_CONFIG.address,
     abi: NFT_CONTRACT_CONFIG.abi,
     functionName: "fetchUnsoldMarketItem",
+    args: [BigInt(PAGE_INDEX), BigInt(LIMIT)],
     chainId: getRequiredEthChain().id,
     query: { enabled, refetchOnWindowFocus: false },
   });
-  const { setItem } = useLocalStorage();
   console.log("useGetUnsoldNFTsV2 hook called", rawNFTs);
-
+  console.log("queryKey ::", queryKey);
   const unsoldNFTs = useMemo(() => {
     if (!rawNFTs) return [];
 
@@ -56,9 +57,8 @@ export const useGetUnsoldNFTsV2 = (enabled = true) => {
       []
     );
 
-    setItem(LOCALSTORAGE_KEYS.getUnsoldNFTs, queryKey);
     return newNFTsFirst;
-  }, [rawNFTs, setItem, queryKey]);
+  }, [rawNFTs]);
 
   return {
     unsoldNFTs,

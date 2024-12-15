@@ -20,6 +20,7 @@ import { Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RANK_MEDALS } from "@/lib/constants";
 
+// TODO: add action section to table
 const TopCreators = () => {
   const { unsoldNFTs, isPending, unsoldNFTsFetchError } = useGetUnsoldNFTsV2();
   const topCreators = useMemo(() => getTopCreators(unsoldNFTs), [unsoldNFTs]);

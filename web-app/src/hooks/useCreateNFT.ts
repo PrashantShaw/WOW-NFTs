@@ -1,8 +1,8 @@
 "use client";
-import { LOCALSTORAGE_KEYS, NFT_CONTRACT_CONFIG } from "@/lib/constants";
+import { NFT_CONTRACT_CONFIG } from "@/lib/constants";
 import { useCallback, useState } from "react";
 import { useReadContract, useWriteContract } from "wagmi";
-import { QueryKey, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import {
   createTokenUri,
@@ -13,10 +13,10 @@ import { waitForTransactionReceipt } from "@wagmi/core";
 import { type WriteContractErrorType } from "@wagmi/core";
 import { type WaitForTransactionReceiptErrorType } from "@wagmi/core";
 import { getConfig } from "@/app/wagmi";
-import useLocalStorage from "./useLocalStorage";
 import { useDataAccessLayer } from "./useDataAccessLayer";
 import { NftFormData } from "@/app/(root)/(NFT)/nft/create/_components/CreateNftForm";
 import { NFTFileUploadResponseData } from "@/lib/definitions";
+import { useGetUnsoldNFTsV2 } from "./useGetUnsoldNFTsV2";
 
 type CreateNFTFormData = {
   listingPriceEth: number;
@@ -24,7 +24,6 @@ type CreateNFTFormData = {
 const useCreateNFT = () => {
   const [isCreatingNFT, setIsCreatingNFT] = useState(false);
   const { id: requiredChainId } = getRequiredEthChain();
-  const { getItem } = useLocalStorage();
   const queryClient = useQueryClient();
   const { writeContractAsync } = useWriteContract();
   const {
@@ -39,6 +38,7 @@ const useCreateNFT = () => {
     query: { enabled: true, refetchOnWindowFocus: false },
   });
   const { verifyConnectionAndChain } = useDataAccessLayer();
+  const { queryKey: unsoldNFTsQueryKey } = useGetUnsoldNFTsV2(false);
 
   const createNFT = useCallback(
     async (nftFormData: CreateNFTFormData) => {
@@ -89,10 +89,7 @@ const useCreateNFT = () => {
           chainId: requiredChainId,
         });
 
-        const getUnsoldNFTsQueryKey: QueryKey | undefined = getItem(
-          LOCALSTORAGE_KEYS.getUnsoldNFTs
-        );
-        queryClient.invalidateQueries({ queryKey: getUnsoldNFTsQueryKey });
+        queryClient.invalidateQueries({ queryKey: unsoldNFTsQueryKey });
         success = true;
         toast.success("NFT Created!", {
           position: "bottom-center",
@@ -119,8 +116,8 @@ const useCreateNFT = () => {
       verifyConnectionAndChain,
       writeContractAsync,
       requiredChainId,
-      getItem,
       queryClient,
+      unsoldNFTsQueryKey,
     ]
   );
 

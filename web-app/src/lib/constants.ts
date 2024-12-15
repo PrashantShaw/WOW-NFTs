@@ -21,7 +21,6 @@ export const NFT_CONTRACT_ADDRESS = process.env
 
 export const LOCALSTORAGE_KEYS = {
   isUserRegistered: "isUserRegistered",
-  getUnsoldNFTs: "getUnsoldNFTs",
   pinataFilesMetadata: "pinataFilesMetadata",
 } as const;
 
@@ -62,7 +61,7 @@ export const BRAND = {
   twitter: "https://x.com/ImPrashantShaw",
 } as const;
 
-export const NFT_CATEGORIES = ["characters", "art", "entertainment"] as const;
+export const NFT_CATEGORIES = ["character", "art", "entertainment"] as const;
 
 export const EDUCATIONAL_Q_AND_A = [
   {

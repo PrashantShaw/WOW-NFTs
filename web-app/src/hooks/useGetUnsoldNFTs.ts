@@ -4,7 +4,6 @@ import { LOCALSTORAGE_KEYS, NFT_CONTRACT_CONFIG } from "@/lib/constants";
 import { RawNFT, NFTMarketItem, PinataFileMetadata } from "@/lib/definitions";
 import { useMemo } from "react";
 import { useReadContract } from "wagmi";
-import useLocalStorage from "./useLocalStorage";
 import { useQuery } from "@tanstack/react-query";
 import { PinListItem } from "pinata-web3";
 
@@ -21,7 +20,6 @@ export const useGetUnsoldNFTs = (enabled = true) => {
     chainId: getRequiredEthChain().id,
     query: { enabled, refetchOnWindowFocus: false },
   });
-  const { setItem } = useLocalStorage();
   console.log("useGetUnsoldNFTs hook called", rawNFTs);
 
   const {
@@ -92,9 +90,8 @@ export const useGetUnsoldNFTs = (enabled = true) => {
       []
     );
 
-    setItem(LOCALSTORAGE_KEYS.getUnsoldNFTs, queryKey);
     return newNFTsFirst;
-  }, [rawNFTs, pinataFileMetadata, setItem, queryKey]);
+  }, [rawNFTs, pinataFileMetadata]);
 
   return {
     unsoldNFTs,

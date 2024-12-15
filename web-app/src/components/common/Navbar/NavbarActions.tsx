@@ -77,7 +77,7 @@ const ProfileMenu = ({ address }: { address: `0x${string}` }) => {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => {
-            router.push("/user/dashboard");
+            router.push(`/user/${address}`);
           }}
         >
           <LayoutDashboard />
