@@ -1,12 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.2 <0.9.0;
 
-/**
- * ERC-721 is a standard for representing ownership of non-fungible tokens, that is, where each token is unique.
- */
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import {ERC721URIStorage} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
-import "hardhat/console.sol";
 import "./CustomCounter.sol";
 
 contract NFTMarketplace is ERC721URIStorage {
@@ -15,12 +11,10 @@ contract NFTMarketplace is ERC721URIStorage {
     CustomCounter.Counter private _tokenIds;
     CustomCounter.Counter private _itemsSold;
 
-    uint256 listingPrice = 0.0025 ether;
+    uint256 private listingPrice = 0.0025 ether;
+    address payable private marketplaceOwner;
 
-    // 'payable' is used so that address or function can send or receive eth
-    address payable owner;
-
-    mapping(uint256 => MarketItem) private idMartketItem;
+    mapping(uint256 => MarketItem) private idMarketItem;
 
     struct MarketItem {
         uint256 tokenId;
@@ -29,16 +23,17 @@ contract NFTMarketplace is ERC721URIStorage {
         uint256 price;
         bool sold;
     }
+
     struct MarketItemWithURI {
         uint256 tokenId;
-        address payable seller;
-        address payable owner;
+        address seller;
+        address owner;
         uint256 price;
         bool sold;
         string tokenURI;
     }
 
-    event idMarketItemCreated(
+    event MarketItemCreated(
         uint256 indexed tokenId,
         address seller,
         address owner,
@@ -46,72 +41,63 @@ contract NFTMarketplace is ERC721URIStorage {
         bool sold
     );
 
-    // pass the name and symbol to the base 'ERC721' contract
-    constructor() ERC721("NFT Metaverse Token", "MYNFT") {
-        owner = payable(msg.sender); // cast 'address' to 'payable address'
+    constructor() ERC721("NFT Marketplace Token", "MYNFT") {
+        marketplaceOwner = payable(msg.sender);
     }
 
     modifier onlyOwner() {
         require(
-            msg.sender == owner,
-            "Only owner of the marketplace can change the listing price."
+            msg.sender == marketplaceOwner,
+            "Only marketplace owner can call this function"
         );
         _;
     }
 
-    modifier onlyAtListingPrice() {
+    modifier validateListingPrice() {
         require(
             msg.value == listingPrice,
-            "Price must be equal to listing price."
+            "Price must be equal to the listing price"
         );
         _;
     }
 
-    function updateListingPrice(
-        uint256 _listingPrice
-    ) public payable onlyOwner {
+    function updateListingPrice(uint256 _listingPrice) external onlyOwner {
         listingPrice = _listingPrice;
     }
 
-    function getListingPrice() public view returns (uint256) {
+    function getListingPrice() external view returns (uint256) {
         return listingPrice;
     }
 
-    // CREATE NFT TOKEN
     function createToken(
         string memory tokenURI,
         uint256 price
-    ) public payable returns (uint256 tokenId) {
-        _tokenIds.increment();
+    ) external payable validateListingPrice returns (uint256) {
+        require(price > 0, "Price must be greater than zero");
 
+        _tokenIds.increment();
         uint256 newTokenId = _tokenIds.current();
 
         _safeMint(msg.sender, newTokenId);
         _setTokenURI(newTokenId, tokenURI);
 
-        createMarketItem(newTokenId, price);
+        _createMarketItem(newTokenId, price);
 
         return newTokenId;
     }
 
-    // CREATE MARKET ITEM
-    function createMarketItem(
-        uint256 tokenId,
-        uint256 price
-    ) private onlyAtListingPrice {
-        require(price > 0, "Price must be greater than zero");
-
-        idMartketItem[tokenId] = MarketItem(
+    function _createMarketItem(uint256 tokenId, uint256 price) private {
+        idMarketItem[tokenId] = MarketItem(
             tokenId,
-            payable(msg.sender), // initially, the creator will be the seller (who is listing the nft to the marketplace by paying some lisitng price)
-            payable(address(this)), // 'this' means this contract, initially the nft belongs to this contract/marketplace
+            payable(msg.sender),
+            payable(address(this)),
             price,
             false
         );
 
-        _transfer(msg.sender, address(this), tokenId); // make contract/marketplace as the owner of the created token
+        _transfer(msg.sender, address(this), tokenId);
 
-        emit idMarketItemCreated(
+        emit MarketItemCreated(
             tokenId,
             msg.sender,
             address(this),
@@ -120,106 +106,108 @@ contract NFTMarketplace is ERC721URIStorage {
         );
     }
 
-    // PUT THE TOKEN BACK TO CONTRACT/MARKETPLACE AT A DIFFERENT PRICE FOR RESALE
-    function reSellToken(
+    function resellToken(
         uint256 tokenId,
         uint256 price
-    ) public payable onlyAtListingPrice {
-        require(
-            idMartketItem[tokenId].owner == msg.sender,
-            "Only token owners are allowed to resell."
-        );
+    ) external payable validateListingPrice {
+        MarketItem storage item = idMarketItem[tokenId];
 
-        idMartketItem[tokenId].sold = false;
-        idMartketItem[tokenId].price = price;
-        idMartketItem[tokenId].seller = payable(msg.sender);
-        idMartketItem[tokenId].owner = payable(address(this));
+        require(
+            item.owner == msg.sender,
+            "Only the owner of the token can resell"
+        );
+        require(price > 0, "Price must be greater than zero");
+
+        item.sold = false;
+        item.price = price;
+        item.seller = payable(msg.sender);
+        item.owner = payable(address(this));
 
         _itemsSold.decrement();
 
         _transfer(msg.sender, address(this), tokenId);
     }
 
-    // SALE TOKENS FROM CONTRACT/MARKETPLACE TO THE USER/BUYER
-    function buyToken(uint256 tokenId) public payable {
-        uint256 tokenPrice = idMartketItem[tokenId].price;
+    function buyToken(uint256 tokenId) external payable {
+        MarketItem storage item = idMarketItem[tokenId];
 
-        require(
-            msg.value == tokenPrice,
-            "Please submit the asking price in order to complete the purchase"
-        );
+        require(msg.value == item.price, "Incorrect payment amount");
+        require(!item.sold, "Token already sold");
 
-        idMartketItem[tokenId].sold = true;
-        idMartketItem[tokenId].owner = payable(msg.sender);
-        // idMartketItem[tokenId].seller = payable(address(0)); // address(0) is zero-address, a valid no-address
+        item.owner = payable(msg.sender);
+        item.sold = true;
 
         _itemsSold.increment();
 
         _transfer(address(this), msg.sender, tokenId);
 
-        payable(owner).transfer(listingPrice); // incentive for marketplace owner when token is sold
-        payable(idMartketItem[tokenId].seller).transfer(msg.value); //seller gets the price value
+        payable(marketplaceOwner).transfer(listingPrice);
+        payable(item.seller).transfer(msg.value);
     }
-    // TODO: compile the contract again and add the abi
-    // GET ALL UNSOLD NFT DATA
-    function fetchUnsoldMarketItem()
-        public
-        view
-        returns (MarketItemWithURI[] memory)
-    {
-        uint256 totalItems = _tokenIds.current();
-        uint256 unsoldItemCount = totalItems - _itemsSold.current();
-        uint256 currIdx = 0;
 
-        MarketItemWithURI[] memory items = new MarketItemWithURI[](
-            unsoldItemCount
+    function fetchUnsoldMarketItem(
+        uint256 startIndex,
+        uint256 limit
+    ) external view returns (MarketItemWithURI[] memory) {
+        uint256 totalItems = _tokenIds.current();
+        uint256 unsoldCount = totalItems - _itemsSold.current();
+        uint256 fetchedCount = 0;
+
+        limit = (startIndex + limit > unsoldCount)
+            ? unsoldCount - startIndex
+            : limit;
+
+        MarketItemWithURI[] memory paginatedItems = new MarketItemWithURI[](
+            limit
         );
 
-        for (uint256 tokenId = 1; tokenId <= totalItems; tokenId++) {
+        uint256 currentIndex = 0;
+        for (uint256 i = 1; i <= totalItems && fetchedCount < limit; i++) {
             if (
-                idMartketItem[tokenId].sold == false &&
-                idMartketItem[tokenId].owner == address(this)
+                !idMarketItem[i].sold && idMarketItem[i].owner == address(this)
             ) {
-                MarketItem storage item = idMartketItem[tokenId];
-                items[currIdx] = MarketItemWithURI({
-                    tokenId: item.tokenId,
-                    seller: item.seller,
-                    owner: item.owner,
-                    price: item.price,
-                    sold: item.sold,
-                    tokenURI: tokenURI(item.tokenId)
-                });
-                currIdx++;
+                if (currentIndex >= startIndex) {
+                    MarketItem storage item = idMarketItem[i];
+                    paginatedItems[fetchedCount] = MarketItemWithURI({
+                        tokenId: item.tokenId,
+                        seller: item.seller,
+                        owner: item.owner,
+                        price: item.price,
+                        sold: item.sold,
+                        tokenURI: tokenURI(item.tokenId)
+                    });
+                    fetchedCount++;
+                }
+                currentIndex++;
             }
         }
 
-        return items;
+        return paginatedItems;
     }
 
-    // GET PURCHASED NFTS BY A USER
     function fetchPurchasedNFTsByUser()
-        public
+        external
         view
         returns (MarketItemWithURI[] memory)
     {
         uint256 totalItems = _tokenIds.current();
-        uint PurchasedNFTsByUserCount = 0;
-        uint currIdx = 0;
+        uint256 purchasedCount = 0;
+        uint256 currentIndex = 0;
 
-        for (uint256 tokenId = 1; tokenId <= totalItems; tokenId++) {
-            if (idMartketItem[tokenId].owner == msg.sender) {
-                PurchasedNFTsByUserCount++;
+        for (uint256 i = 1; i <= totalItems; i++) {
+            if (idMarketItem[i].owner == msg.sender) {
+                purchasedCount++;
             }
         }
 
-        MarketItemWithURI[] memory items = new MarketItemWithURI[](
-            PurchasedNFTsByUserCount
+        MarketItemWithURI[] memory purchasedItems = new MarketItemWithURI[](
+            purchasedCount
         );
 
-        for (uint256 tokenId = 1; tokenId <= totalItems; tokenId++) {
-            if (idMartketItem[tokenId].owner == msg.sender) {
-                MarketItem storage item = idMartketItem[tokenId];
-                items[currIdx] = MarketItemWithURI({
+        for (uint256 i = 1; i <= totalItems; i++) {
+            if (idMarketItem[i].owner == msg.sender) {
+                MarketItem storage item = idMarketItem[i];
+                purchasedItems[currentIndex] = MarketItemWithURI({
                     tokenId: item.tokenId,
                     seller: item.seller,
                     owner: item.owner,
@@ -227,37 +215,36 @@ contract NFTMarketplace is ERC721URIStorage {
                     sold: item.sold,
                     tokenURI: tokenURI(item.tokenId)
                 });
-                currIdx++;
+                currentIndex++;
             }
         }
 
-        return items;
+        return purchasedItems;
     }
 
-    // GET LISTED NFTS BY A USER
     function fetchListedNFTsByUser()
         public
         view
         returns (MarketItemWithURI[] memory)
     {
         uint256 totalItems = _tokenIds.current();
-        uint listedNFTsByUserCount = 0;
+        uint listedCount = 0;
         uint currIdx = 0;
 
         for (uint256 tokenId = 1; tokenId <= totalItems; tokenId++) {
-            if (idMartketItem[tokenId].seller == msg.sender) {
-                listedNFTsByUserCount++;
+            if (idMarketItem[tokenId].seller == msg.sender) {
+                listedCount++;
             }
         }
 
-        MarketItemWithURI[] memory items = new MarketItemWithURI[](
-            listedNFTsByUserCount
+        MarketItemWithURI[] memory listedItems = new MarketItemWithURI[](
+            listedCount
         );
 
         for (uint256 tokenId = 1; tokenId <= totalItems; tokenId++) {
-            if (idMartketItem[tokenId].owner == msg.sender) {
-                MarketItem storage item = idMartketItem[tokenId];
-                items[currIdx] = MarketItemWithURI({
+            if (idMarketItem[tokenId].owner == msg.sender) {
+                MarketItem storage item = idMarketItem[tokenId];
+                listedItems[currIdx] = MarketItemWithURI({
                     tokenId: item.tokenId,
                     seller: item.seller,
                     owner: item.owner,
@@ -269,6 +256,6 @@ contract NFTMarketplace is ERC721URIStorage {
             }
         }
 
-        return items;
+        return listedItems;
     }
 }
