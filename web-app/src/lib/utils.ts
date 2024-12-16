@@ -10,6 +10,7 @@ import {
 } from "./definitions";
 import { readContract } from "@wagmi/core";
 import { getConfig } from "@/app/wagmi";
+import bs58 from "bs58";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -173,4 +174,15 @@ export const getTopCreators = (
     .slice(0, count);
 
   return topCreatorsArr;
+};
+
+export const encodeText = (text: string | `0x${string}`) => {
+  const enc = new TextEncoder();
+  const bytes = enc.encode(text); // UTF-8 byte array
+  return bs58.encode(bytes); // Base58 encode
+};
+
+export const decodeText = (encoded: string) => {
+  const bytes = bs58.decode(encoded); // Base58 decode
+  return new TextDecoder().decode(bytes); // Convert back to string
 };

@@ -1,7 +1,11 @@
 "use client";
 
 import { useUserNFTs } from "@/hooks/useUserNFTs";
-import { copyToCLipboard, shortedAccountAddress } from "@/lib/utils";
+import {
+  copyToCLipboard,
+  decodeText,
+  shortedAccountAddress,
+} from "@/lib/utils";
 import { Copy } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useCallback } from "react";
@@ -9,9 +13,13 @@ import toast from "react-hot-toast";
 import { useAccount } from "wagmi";
 
 const Profile = () => {
-  const { address } = useAccount();
+  const { address: connectedAddress } = useAccount();
   const params = useParams<{ account: `0x${string}` }>();
-  const account = params.account || address;
+  const decodedAddress = decodeText(params.account);
+  const isConnectedUser = decodedAddress === connectedAddress;
+  const account = isConnectedUser
+    ? connectedAddress
+    : (decodedAddress as `0x${string}`);
   const { userListedNFTs, userPurchasedNFTs } = useUserNFTs(account);
   console.log("@@@@@@@@@@@@@@@@@", userListedNFTs, userPurchasedNFTs);
   const handleCopyAccountAddress = useCallback(async (address: string) => {
@@ -26,14 +34,16 @@ const Profile = () => {
       });
     }
   }, []);
-  const userAddress = address ? shortedAccountAddress(address) : "OX...";
+
+  const userAddress = account ? shortedAccountAddress(account) : "OX...";
+
   return (
     <div className="pt-[2.5rem]">
       <h1 className="text-3xl sm:text-5xl font-bold mb-4 flex gap-3 items-end">
         {userAddress}{" "}
         <button
           className="p-2 hover:bg-secondary rounded-md transition-all"
-          onClick={() => handleCopyAccountAddress(address ?? "0x")}
+          onClick={() => handleCopyAccountAddress(account ?? "0x")}
         >
           <Copy />
         </button>
@@ -49,24 +59,24 @@ const Profile = () => {
         className="text-4xl font-semibold tracking-tight first:mt-0 mb-4 pt-[4rem]"
         id="my-nfts"
       >
-        My NFTs
+        Purchased Items
       </h2>
       <p className="mb-4 text-muted-foreground text-balance">
-        Explore your personal NFT collection! This section showcases all the
-        NFTs you own. Manage your assets, relist them for sale, or simply admire
-        your unique collection.
+        {isConnectedUser
+          ? "Explore your personal NFT collection! This section showcases all the NFTs you own. Manage your assets, relist them for sale, or simply admire your unique collection."
+          : "Explore the purchased NFTs collection! This section showcases all the NFTs that this user own. You can simply admire the collection."}
       </p>
       {/* TODO: add purchased nfts here */}
       <h2
         className="text-4xl font-semibold tracking-tight first:mt-0 mb-4 pt-[4rem]"
         id="my-listings"
       >
-        My Listings
+        Listed Items
       </h2>
       <p className="mb-4 text-muted-foreground text-balance">
-        Manage all your active NFT listings in one place! This section displays
-        the NFTs you’ve listed for sale on the marketplace. Update details,
-        track engagement, or remove items to refine your selling strategy.
+        {isConnectedUser
+          ? "Manage all your active NFT listings in one place! This section displays the NFTs you’ve listed for sale on the marketplace. Update details, track engagement, or remove items to refine your selling strategy."
+          : "This section displays the NFTs that  is user has listed for sale on the marketplace. Buy or track engagement to refine your own selling strategy."}
       </p>
       {/* TODO: add your listed nfts here */}
     </div>

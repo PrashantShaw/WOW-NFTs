@@ -23,7 +23,7 @@ import Link from "next/link";
 import { useAccount, useDisconnect } from "wagmi";
 import Image from "next/image";
 import useConnectWallet from "@/hooks/useConnectWallet";
-import { shortedAccountAddress } from "@/lib/utils";
+import { encodeText, shortedAccountAddress } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 const NavbarActions = () => {
   const { isConnected, address } = useAccount();
@@ -77,7 +77,7 @@ const ProfileMenu = ({ address }: { address: `0x${string}` }) => {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => {
-            router.push(`/user/${address}`);
+            router.push(`/user/${encodeText(address)}`);
           }}
         >
           <LayoutDashboard />
