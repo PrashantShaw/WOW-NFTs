@@ -2,21 +2,21 @@ import { NFTCard } from "@/app/(root)/(NFT)/nft/collections/_components/NFTCard"
 import NFTCardSkeleton from "@/app/(root)/(NFT)/nft/collections/_components/NFTCardSkeleton";
 import { Button } from "@/components/ui/button";
 import { UnsoldMarketItem } from "@/lib/definitions";
-import { Plus } from "lucide-react";
+import { CookingPot, Plus } from "lucide-react";
 import { ReadContractErrorType } from "viem";
 
-type UerListedNFTsProps = {
+type UserListedNFTsProps = {
   userListedNFTs: UnsoldMarketItem[];
   isPending: boolean;
   error: ReadContractErrorType | null;
   isConnectedUser: boolean;
 };
-const UerListedNFTs = ({
+const UserListedNFTs = ({
   userListedNFTs,
   isPending,
   error,
   isConnectedUser,
-}: UerListedNFTsProps) => {
+}: UserListedNFTsProps) => {
   if (isPending)
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 py-7">
@@ -46,13 +46,17 @@ const UerListedNFTs = ({
           <p className="text-center text-lg text-muted-foreground font-semibold">
             No Listed NFTs to show!
           </p>
-          <Button size={"sm"}>
-            <Plus /> Create Now
-          </Button>
+          {isConnectedUser ? (
+            <Button size={"sm"}>
+              <Plus /> Create Now
+            </Button>
+          ) : (
+            <CookingPot />
+          )}
         </div>
       )}
     </div>
   );
 };
 
-export default UerListedNFTs;
+export default UserListedNFTs;

@@ -25,6 +25,7 @@ import {
 import Link from "next/link";
 import {
   ArrowLeftFromLine,
+  CookingPot,
   Copy,
   Ellipsis,
   EqualApproximately,
@@ -62,6 +63,7 @@ type ViewNFTProps = {
   isPreview?: boolean;
 };
 // TODO: create buy/sell btn based on seller fo the item
+// TODO: update contract to have a function to view nft based on tokenId then use that here.
 const ViewNFT = ({ id, isPreview = false }: ViewNFTProps) => {
   const unsoldNFTsFetchEnabled = !isPreview;
   const previewCtx = usePreviewNFT();
@@ -217,6 +219,14 @@ const ViewNFT = ({ id, isPreview = false }: ViewNFTProps) => {
       });
     }
   }, [buyNFT, isPreview, nft.price, nft.tokenId, router]);
+
+  if (Object.keys(nft).length === 0)
+    return (
+      <div className="grid place-items-center gap-4 text-muted-foreground bg-muted pt-24 pb-28 rounded-lg">
+        <CookingPot className="w-[5rem] h-[5rem]" strokeWidth={1} />
+        <p className="text-center font-medium text-3xl ">NFT Not Found!</p>
+      </div>
+    );
 
   if (unsoldNFTsFetchError || pinataMetadataError)
     return (

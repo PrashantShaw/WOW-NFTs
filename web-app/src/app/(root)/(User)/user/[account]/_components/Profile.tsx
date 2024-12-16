@@ -11,7 +11,7 @@ import { useParams } from "next/navigation";
 import { useCallback } from "react";
 import toast from "react-hot-toast";
 import { useAccount } from "wagmi";
-import UerListedNFTs from "./UerListedNFTs";
+import UserListedNFTs from "./UserListedNFTs";
 import UserPurchasedNFTs from "./UserPurchasedNFTs";
 
 const Profile = () => {
@@ -101,7 +101,7 @@ const Profile = () => {
           : "This section displays the NFTs that  is user has listed for sale on the marketplace. Buy or track engagement to refine your own selling strategy."}
       </p>
       {/* TODO: add your listed nfts here */}
-      <UerListedNFTs
+      <UserListedNFTs
         userListedNFTs={userListedNFTs}
         isPending={isFetchingListedNFTsByUser}
         error={listedNFTsByUserFetchError}

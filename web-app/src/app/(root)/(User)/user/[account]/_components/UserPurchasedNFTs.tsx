@@ -2,7 +2,7 @@ import { NFTCard } from "@/app/(root)/(NFT)/nft/collections/_components/NFTCard"
 import NFTCardSkeleton from "@/app/(root)/(NFT)/nft/collections/_components/NFTCardSkeleton";
 import { Button } from "@/components/ui/button";
 import { UnsoldMarketItem } from "@/lib/definitions";
-import { ShoppingBag } from "lucide-react";
+import { CookingPot, ShoppingBag } from "lucide-react";
 import { ReadContractErrorType } from "viem";
 
 type UserPurchasedNFTsProps = {
@@ -46,9 +46,13 @@ const UserPurchasedNFTs = ({
           <p className="text-center text-lg text-muted-foreground font-semibold">
             No Purchased NFTs to show!
           </p>
-          <Button size={"sm"}>
-            <ShoppingBag /> Purchase Now
-          </Button>
+          {isConnectedUser ? (
+            <Button size={"sm"}>
+              <ShoppingBag /> Purchase Now
+            </Button>
+          ) : (
+            <CookingPot />
+          )}
         </div>
       )}
     </div>
