@@ -85,7 +85,7 @@ const ProfileMenu = ({ address }: { address: `0x${string}` }) => {
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => {
-            router.push("/user/dashboard#my-nfts");
+            router.push(`/user/${encodeText(address)}#my-nfts`);
           }}
         >
           <AlignVerticalJustifyEnd />
@@ -93,7 +93,7 @@ const ProfileMenu = ({ address }: { address: `0x${string}` }) => {
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => {
-            router.push("/user/dashboard#my-listings");
+            router.push(`/user/${encodeText(address)}#my-listings`);
           }}
         >
           <List />

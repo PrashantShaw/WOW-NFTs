@@ -494,6 +494,57 @@ export const NFT_ABI = [
     type: "function",
   },
   {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "tokenId",
+        type: "uint256",
+      },
+    ],
+    name: "fetchNFTByTokenId",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "uint256",
+            name: "tokenId",
+            type: "uint256",
+          },
+          {
+            internalType: "address",
+            name: "seller",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "owner",
+            type: "address",
+          },
+          {
+            internalType: "uint256",
+            name: "price",
+            type: "uint256",
+          },
+          {
+            internalType: "bool",
+            name: "sold",
+            type: "bool",
+          },
+          {
+            internalType: "string",
+            name: "tokenURI",
+            type: "string",
+          },
+        ],
+        internalType: "struct NFTMarketplace.MarketItemWithURI",
+        name: "",
+        type: "tuple",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [],
     name: "fetchPurchasedNFTsByUser",
     outputs: [

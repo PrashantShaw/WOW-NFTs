@@ -1,7 +1,6 @@
 "use client";
 
 import { useGetNFTMetadata } from "@/hooks/useGetNFTMetadata";
-import { useGetUnsoldNFTsV2 } from "@/hooks/useGetUnsoldNFTsV2";
 import { usePreviewNFT } from "@/hooks/usePreviewNFT";
 import {
   NFTMarketItem,
@@ -57,6 +56,7 @@ import toast from "react-hot-toast";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import useCreateNFT from "@/hooks/useCreateNFT";
 import useBuyNFT from "@/hooks/useBuyNFT";
+import { useGetNFT } from "@/hooks/useGetNFT";
 
 type ViewNFTProps = {
   id: string;
@@ -65,7 +65,7 @@ type ViewNFTProps = {
 // TODO: create buy/sell btn based on seller fo the item
 // TODO: update contract to have a function to view nft based on tokenId then use that here.
 const ViewNFT = ({ id, isPreview = false }: ViewNFTProps) => {
-  const unsoldNFTsFetchEnabled = !isPreview;
+  const NFTFetchEnabled = !isPreview;
   const previewCtx = usePreviewNFT();
   const router = useRouter();
 
@@ -75,9 +75,15 @@ const ViewNFT = ({ id, isPreview = false }: ViewNFTProps) => {
 
   const [isNftImageLoading, setIsNftImageLoading] = useState(true);
   const { address } = useAccount();
-  const { unsoldNFTs, isPending, unsoldNFTsFetchError } = useGetUnsoldNFTsV2(
-    unsoldNFTsFetchEnabled
-  );
+  // const { unsoldNFTs, isPending, unsoldNFTsFetchError } = useGetUnsoldNFTsV2(
+  //   unsoldNFTsFetchEnabled
+  // );
+  console.log("NFTFetchEnabled", NFTFetchEnabled);
+  const {
+    NFT: fetchedNft,
+    isFetchingNFT,
+    NFTFetchError,
+  } = useGetNFT(id, NFTFetchEnabled);
   const {
     createNFT,
     isCreatingNFT,
@@ -88,18 +94,22 @@ const ViewNFT = ({ id, isPreview = false }: ViewNFTProps) => {
 
   const { buyNFT, isBuyingNFT } = useBuyNFT();
 
-  const fetchedNft = useMemo(
-    () =>
-      isPreview
-        ? ([] as UnsoldMarketItem[])
-        : unsoldNFTs.filter((unsoldNFT) => unsoldNFT.tokenId === id),
-    [id, isPreview, unsoldNFTs]
-  );
+  console.log("isFetchingNFT", isFetchingNFT);
 
-  const nftMetadataFetchEnabled = !isPreview && fetchedNft.length > 0;
+  // const fetchedNft = useMemo(
+  //   () =>
+  //     isPreview
+  //       ? ([] as UnsoldMarketItem[])
+  //       : NFT
+  //       ? [NFT]
+  //       : ([] as UnsoldMarketItem[]),
+  //   [NFT, isPreview]
+  // );
+
+  const nftMetadataFetchEnabled = !isPreview && fetchedNft !== null;
   const { pinataFileMetadata, isFetchingMetadata, pinataMetadataError } =
     useGetNFTMetadata(
-      fetchedNft.length > 0 ? fetchedNft[0].ipfsHash : "",
+      nftMetadataFetchEnabled ? fetchedNft.ipfsHash : "",
       nftMetadataFetchEnabled
     );
 
@@ -141,7 +151,7 @@ const ViewNFT = ({ id, isPreview = false }: ViewNFTProps) => {
       };
       return data;
     }
-    return { ...fetchedNft[0], ...nftMetadata };
+    return { ...(fetchedNft ?? ({} as UnsoldMarketItem)), ...nftMetadata };
   }, [
     isPreview,
     fetchedNft,
@@ -220,26 +230,26 @@ const ViewNFT = ({ id, isPreview = false }: ViewNFTProps) => {
     }
   }, [buyNFT, isPreview, nft.price, nft.tokenId, router]);
 
+  if (isFetchingNFT)
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 py-[4rem]">
+        skeletons here...
+      </div>
+    );
+
+  if (NFTFetchError || pinataMetadataError)
+    return (
+      <div className="text-center text-red-500 font-semibold pt-10">
+        {NFTFetchError?.shortMessage}
+        {pinataMetadataError?.message}
+      </div>
+    );
+
   if (Object.keys(nft).length === 0)
     return (
       <div className="grid place-items-center gap-4 text-muted-foreground bg-muted pt-24 pb-28 rounded-lg">
         <CookingPot className="w-[5rem] h-[5rem]" strokeWidth={1} />
         <p className="text-center font-medium text-3xl ">NFT Not Found!</p>
-      </div>
-    );
-
-  if (unsoldNFTsFetchError || pinataMetadataError)
-    return (
-      <div className="text-center text-red-500 font-semibold pt-10">
-        {unsoldNFTsFetchError?.shortMessage}
-        {pinataMetadataError?.message}
-      </div>
-    );
-
-  if (isPending)
-    return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 py-[4rem]">
-        skeletons here...
       </div>
     );
 

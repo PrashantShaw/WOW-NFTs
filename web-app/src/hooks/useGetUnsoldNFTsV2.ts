@@ -62,7 +62,7 @@ export const useGetUnsoldNFTsV2 = (enabled = true) => {
 
   return {
     unsoldNFTs,
-    isPending: isFetchingUnsoldNFTs,
+    isPending: enabled ? isFetchingUnsoldNFTs : false,
     unsoldNFTsFetchError,
     queryKey,
     fetchUnsoldNFTs,

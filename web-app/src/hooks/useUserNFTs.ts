@@ -114,12 +114,16 @@ export const useUserNFTs = (
 
   return {
     userListedNFTs,
-    isFetchingListedNFTsByUser,
+    isFetchingListedNFTsByUser: enabledUserListedNFTs
+      ? isFetchingListedNFTsByUser
+      : false,
     listedNFTsByUserFetchError,
     userListedNFTsQueryKey,
     fetchListedNFTsByUser,
     userPurchasedNFTs,
-    isFetchingPurchasedNFTsByUser,
+    isFetchingPurchasedNFTsByUser: enabledUserPurchasedNFTs
+      ? isFetchingPurchasedNFTsByUser
+      : false,
     purchasedNFTsByUserFetchError,
     userPurchasedNFTsQueryKey,
     fetchPurchasedNFTsByUser,
