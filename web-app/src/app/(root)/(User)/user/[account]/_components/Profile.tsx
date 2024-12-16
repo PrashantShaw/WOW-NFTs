@@ -11,6 +11,8 @@ import { useParams } from "next/navigation";
 import { useCallback } from "react";
 import toast from "react-hot-toast";
 import { useAccount } from "wagmi";
+import UerListedNFTs from "./UerListedNFTs";
+import UserPurchasedNFTs from "./UserPurchasedNFTs";
 
 const Profile = () => {
   const { address: connectedAddress } = useAccount();
@@ -20,8 +22,16 @@ const Profile = () => {
   const account = isConnectedUser
     ? connectedAddress
     : (decodedAddress as `0x${string}`);
-  const { userListedNFTs, userPurchasedNFTs } = useUserNFTs(account);
-  console.log("@@@@@@@@@@@@@@@@@", userListedNFTs, userPurchasedNFTs);
+  const {
+    userListedNFTs,
+    isFetchingListedNFTsByUser,
+    listedNFTsByUserFetchError,
+    userPurchasedNFTs,
+    isFetchingPurchasedNFTsByUser,
+    purchasedNFTsByUserFetchError,
+  } = useUserNFTs(account);
+  // console.log("@@@@@@@@@@@@@@@@@", userListedNFTs, userPurchasedNFTs);
+
   const handleCopyAccountAddress = useCallback(async (address: string) => {
     const copid = await copyToCLipboard(address);
     if (copid) {
@@ -59,7 +69,10 @@ const Profile = () => {
         className="text-4xl font-semibold tracking-tight first:mt-0 mb-4 pt-[4rem]"
         id="my-nfts"
       >
-        Purchased Items
+        Purchased Items{" "}
+        <span className="text-muted-foreground font-normal text-3xl">
+          ({userPurchasedNFTs.length})
+        </span>
       </h2>
       <p className="mb-4 text-muted-foreground text-balance">
         {isConnectedUser
@@ -67,11 +80,20 @@ const Profile = () => {
           : "Explore the purchased NFTs collection! This section showcases all the NFTs that this user own. You can simply admire the collection."}
       </p>
       {/* TODO: add purchased nfts here */}
+      <UserPurchasedNFTs
+        userPurchasedNFTs={userPurchasedNFTs}
+        isPending={isFetchingPurchasedNFTsByUser}
+        error={purchasedNFTsByUserFetchError}
+        isConnectedUser={isConnectedUser}
+      />
       <h2
         className="text-4xl font-semibold tracking-tight first:mt-0 mb-4 pt-[4rem]"
         id="my-listings"
       >
-        Listed Items
+        Listed Items{" "}
+        <span className="text-muted-foreground font-normal text-3xl">
+          ({userListedNFTs.length})
+        </span>
       </h2>
       <p className="mb-4 text-muted-foreground text-balance">
         {isConnectedUser
@@ -79,6 +101,12 @@ const Profile = () => {
           : "This section displays the NFTs that  is user has listed for sale on the marketplace. Buy or track engagement to refine your own selling strategy."}
       </p>
       {/* TODO: add your listed nfts here */}
+      <UerListedNFTs
+        userListedNFTs={userListedNFTs}
+        isPending={isFetchingListedNFTsByUser}
+        error={listedNFTsByUserFetchError}
+        isConnectedUser={isConnectedUser}
+      />
     </div>
   );
 };

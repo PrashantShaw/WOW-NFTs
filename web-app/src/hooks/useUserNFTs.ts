@@ -114,7 +114,7 @@ export const useUserNFTs = (
 
   return {
     userListedNFTs,
-    isPending: isFetchingListedNFTsByUser,
+    isFetchingListedNFTsByUser,
     listedNFTsByUserFetchError,
     userListedNFTsQueryKey,
     fetchListedNFTsByUser,
