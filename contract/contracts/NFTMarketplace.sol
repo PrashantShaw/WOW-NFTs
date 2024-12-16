@@ -142,7 +142,7 @@ contract NFTMarketplace is ERC721URIStorage {
         _transfer(address(this), msg.sender, tokenId);
 
         payable(marketplaceOwner).transfer(listingPrice);
-        payable(item.seller).transfer(msg.value);
+        payable(item.seller).transfer(msg.value - listingPrice);
     }
 
     function fetchUnsoldMarketItem(
@@ -195,7 +195,7 @@ contract NFTMarketplace is ERC721URIStorage {
         uint256 currentIndex = 0;
 
         for (uint256 i = 1; i <= totalItems; i++) {
-            if (idMarketItem[i].owner == msg.sender) {
+            if (idMarketItem[i].sold && idMarketItem[i].owner == msg.sender) {
                 purchasedCount++;
             }
         }
@@ -205,7 +205,7 @@ contract NFTMarketplace is ERC721URIStorage {
         );
 
         for (uint256 i = 1; i <= totalItems; i++) {
-            if (idMarketItem[i].owner == msg.sender) {
+            if (idMarketItem[i].sold && idMarketItem[i].owner == msg.sender) {
                 MarketItem storage item = idMarketItem[i];
                 purchasedItems[currentIndex] = MarketItemWithURI({
                     tokenId: item.tokenId,
@@ -232,7 +232,10 @@ contract NFTMarketplace is ERC721URIStorage {
         uint currIdx = 0;
 
         for (uint256 tokenId = 1; tokenId <= totalItems; tokenId++) {
-            if (idMarketItem[tokenId].seller == msg.sender) {
+            if (
+                !idMarketItem[tokenId].sold &&
+                idMarketItem[tokenId].seller == msg.sender
+            ) {
                 listedCount++;
             }
         }
@@ -242,7 +245,10 @@ contract NFTMarketplace is ERC721URIStorage {
         );
 
         for (uint256 tokenId = 1; tokenId <= totalItems; tokenId++) {
-            if (idMarketItem[tokenId].owner == msg.sender) {
+            if (
+                !idMarketItem[tokenId].sold &&
+                idMarketItem[tokenId].seller == msg.sender
+            ) {
                 MarketItem storage item = idMarketItem[tokenId];
                 listedItems[currIdx] = MarketItemWithURI({
                     tokenId: item.tokenId,
@@ -257,5 +263,21 @@ contract NFTMarketplace is ERC721URIStorage {
         }
 
         return listedItems;
+    }
+
+    function fetchNFTByTokenId(
+        uint256 tokenId
+    ) public view returns (MarketItemWithURI memory) {
+        MarketItem storage item = idMarketItem[tokenId];
+        MarketItemWithURI memory requiredItem = MarketItemWithURI({
+            tokenId: item.tokenId,
+            seller: item.seller,
+            owner: item.owner,
+            price: item.price,
+            sold: item.sold,
+            tokenURI: tokenURI(item.tokenId)
+        });
+
+        return requiredItem;
     }
 }
