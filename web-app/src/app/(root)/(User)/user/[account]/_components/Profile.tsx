@@ -6,13 +6,20 @@ import {
   decodeText,
   shortedAccountAddress,
 } from "@/lib/utils";
-import { Copy } from "lucide-react";
+import { Copy, Loader, RefreshCcw } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useCallback } from "react";
 import toast from "react-hot-toast";
 import { useAccount } from "wagmi";
 import UserListedNFTs from "./UserListedNFTs";
 import UserPurchasedNFTs from "./UserPurchasedNFTs";
+import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const Profile = () => {
   const { address: connectedAddress } = useAccount();
@@ -29,6 +36,8 @@ const Profile = () => {
     userPurchasedNFTs,
     isFetchingPurchasedNFTsByUser,
     purchasedNFTsByUserFetchError,
+    fetchPurchasedNFTsByUser,
+    fetchListedNFTsByUser,
   } = useUserNFTs(account);
   // console.log("@@@@@@@@@@@@@@@@@", userListedNFTs, userPurchasedNFTs);
 
@@ -70,16 +79,38 @@ const Profile = () => {
         id="my-nfts"
       >
         Purchased Items{" "}
-        <span className="text-muted-foreground font-normal text-3xl">
+        <span className="text-muted-foreground font-normal text-3xl pr-4">
           ({userPurchasedNFTs.length})
         </span>
+        <TooltipProvider>
+          <Tooltip delayDuration={300}>
+            <TooltipTrigger>
+              <Button
+                variant={"secondary"}
+                size={"icon"}
+                onClick={() => {
+                  fetchPurchasedNFTsByUser();
+                }}
+                disabled={isFetchingPurchasedNFTsByUser}
+              >
+                {isFetchingPurchasedNFTsByUser ? (
+                  <Loader className="animate-spin" />
+                ) : (
+                  <RefreshCcw />
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="font-normal">Refresh</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </h2>
       <p className="mb-4 text-muted-foreground text-balance">
         {isConnectedUser
           ? "Explore your personal NFT collection! This section showcases all the NFTs you own. Manage your assets, relist them for sale, or simply admire your unique collection."
           : "Explore the purchased NFTs collection! This section showcases all the NFTs that this user own. You can simply admire the collection."}
       </p>
-      {/* TODO: add purchased nfts here */}
       <UserPurchasedNFTs
         userPurchasedNFTs={userPurchasedNFTs}
         isPending={isFetchingPurchasedNFTsByUser}
@@ -91,16 +122,38 @@ const Profile = () => {
         id="my-listings"
       >
         Listed Items{" "}
-        <span className="text-muted-foreground font-normal text-3xl">
+        <span className="text-muted-foreground font-normal text-3xl pr-4">
           ({userListedNFTs.length})
         </span>
+        <TooltipProvider>
+          <Tooltip delayDuration={300}>
+            <TooltipTrigger>
+              <Button
+                variant={"secondary"}
+                size={"icon"}
+                onClick={() => {
+                  fetchListedNFTsByUser();
+                }}
+                disabled={isFetchingListedNFTsByUser}
+              >
+                {isFetchingListedNFTsByUser ? (
+                  <Loader className="animate-spin" />
+                ) : (
+                  <RefreshCcw />
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="font-normal">Refresh</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </h2>
       <p className="mb-4 text-muted-foreground text-balance">
         {isConnectedUser
           ? "Manage all your active NFT listings in one place! This section displays the NFTs you’ve listed for sale on the marketplace. Update details, track engagement, or remove items to refine your selling strategy."
           : "This section displays the NFTs that  is user has listed for sale on the marketplace. Buy or track engagement to refine your own selling strategy."}
       </p>
-      {/* TODO: add your listed nfts here */}
       <UserListedNFTs
         userListedNFTs={userListedNFTs}
         isPending={isFetchingListedNFTsByUser}

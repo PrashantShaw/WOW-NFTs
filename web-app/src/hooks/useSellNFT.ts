@@ -69,7 +69,7 @@ const useSellNFT = () => {
 
         queryClient.invalidateQueries({ queryKey: unsoldNFTsQueryKey });
         success = true;
-        toast.success("NFT Purchased!", {
+        toast.success("NFT Successfully Listed!", {
           position: "bottom-center",
           duration: 3000,
         });
@@ -79,7 +79,7 @@ const useSellNFT = () => {
           | WaitForTransactionReceiptErrorType
           | Error;
         const shortErrorMessage = typedError.message.split("\n")[0];
-        console.log("error purchasing nft ::", typedError);
+        console.log("error Selling nft ::", typedError);
         toast.error(shortErrorMessage, {
           position: "bottom-right",
           duration: 5000,
@@ -92,15 +92,16 @@ const useSellNFT = () => {
     },
     [
       verifyConnectionAndChain,
+      listingPriceWei,
       writeContractAsync,
       requiredChainId,
-      listingPriceWei,
       queryClient,
       unsoldNFTsQueryKey,
     ]
   );
 
   return {
+    listingPriceWei,
     isSellingNFT,
     isFetchingListingPrice,
     sellNFT,

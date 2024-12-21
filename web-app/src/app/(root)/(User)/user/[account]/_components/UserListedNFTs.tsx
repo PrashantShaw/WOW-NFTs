@@ -3,6 +3,7 @@ import NFTCardSkeleton from "@/app/(root)/(NFT)/nft/collections/_components/NFTC
 import { Button } from "@/components/ui/button";
 import { UnsoldMarketItem } from "@/lib/definitions";
 import { CookingPot, Plus } from "lucide-react";
+import Link from "next/link";
 import { ReadContractErrorType } from "viem";
 
 type UserListedNFTsProps = {
@@ -47,9 +48,11 @@ const UserListedNFTs = ({
             No Listed NFTs to show!
           </p>
           {isConnectedUser ? (
-            <Button size={"sm"}>
-              <Plus /> Create Now
-            </Button>
+            <Link href={"/nft/create"}>
+              <Button size={"sm"}>
+                <Plus /> Create Now
+              </Button>
+            </Link>
           ) : (
             <CookingPot />
           )}
