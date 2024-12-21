@@ -2,7 +2,7 @@ import { UnsoldMarketItem } from "@/lib/definitions";
 import { getEthFromWei, shortedAccountAddress } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
-import NFTCardHoverAction from "./NFTCardHoverAction";
+import NFTCardHoverActions from "./NFTCardHoverActions";
 
 export const NFTCard = ({ nft }: { nft: UnsoldMarketItem }) => {
   return (
@@ -32,7 +32,12 @@ export const NFTCard = ({ nft }: { nft: UnsoldMarketItem }) => {
         </div>
       </Link>
       <div className="absolute bg-background cursor-pointer bottom-0 w-full translate-y-[100%] group-hover/nftCard:translate-y-0 transition-all">
-        <NFTCardHoverAction owner={nft.owner} sold={nft.sold} />
+        <NFTCardHoverActions
+          owner={nft.owner}
+          sold={nft.sold}
+          tokenId={nft.tokenId}
+          priceWei={nft.price}
+        />
       </div>
     </div>
   );

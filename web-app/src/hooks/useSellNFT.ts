@@ -1,7 +1,7 @@
 "use client";
 import { NFT_CONTRACT_CONFIG } from "@/lib/constants";
-import { useCallback, useState } from "react";
-import { useWriteContract } from "wagmi";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useReadContract, useWriteContract } from "wagmi";
 import { useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { getRequiredEthChain } from "@/lib/utils";
@@ -12,29 +12,55 @@ import { getConfig } from "@/app/wagmi";
 import { useDataAccessLayer } from "./useDataAccessLayer";
 import { useGetUnsoldNFTsV2 } from "./useGetUnsoldNFTsV2";
 
-const useBuyNFT = () => {
-  const [isBuyingNFT, setIsBuyingNFT] = useState(false);
-  const { id: requiredChainId } = getRequiredEthChain();
-  const queryClient = useQueryClient();
+const useSellNFT = () => {
+  const [isSellingNFT, setIsSellingNFT] = useState(false);
   const { writeContractAsync } = useWriteContract();
   const { verifyConnectionAndChain } = useDataAccessLayer();
   const { queryKey: unsoldNFTsQueryKey } = useGetUnsoldNFTsV2(false);
+  const queryClient = useQueryClient();
+  const { id: requiredChainId } = useMemo(() => getRequiredEthChain(), []);
 
-  const buyNFT = useCallback(
-    async (tokenId: string, priceWei: string) => {
+  const {
+    data: listingPriceWei,
+    isPending: isFetchingListingPrice,
+    error: listingPriceFetchError,
+  } = useReadContract({
+    address: NFT_CONTRACT_CONFIG.address,
+    abi: NFT_CONTRACT_CONFIG.abi,
+    functionName: "getListingPrice",
+    chainId: requiredChainId,
+    query: { enabled: true, refetchOnWindowFocus: false },
+  });
+
+  useEffect(() => {
+    if (listingPriceFetchError) {
+      console.log("Error fetching listing price ::", listingPriceFetchError);
+      toast.error("Error fetching Listing Price!", {
+        duration: 5000,
+        position: "bottom-right",
+      });
+    }
+  }, [listingPriceFetchError]);
+
+  const sellNFT = useCallback(
+    async (tokenId: string, sellPriceWei: string) => {
       let success = false;
 
       try {
         verifyConnectionAndChain();
-        setIsBuyingNFT(true);
+        setIsSellingNFT(true);
+
+        if (!listingPriceWei) {
+          throw new Error("Listing Price not available!");
+        }
 
         const hash = await writeContractAsync({
           address: NFT_CONTRACT_CONFIG.address,
           abi: NFT_CONTRACT_CONFIG.abi,
-          functionName: "buyToken",
-          args: [BigInt(tokenId)],
+          functionName: "resellToken",
+          args: [BigInt(tokenId), BigInt(sellPriceWei)],
           chainId: requiredChainId,
-          value: BigInt(priceWei),
+          value: listingPriceWei,
         });
         await waitForTransactionReceipt(getConfig(), {
           hash,
@@ -59,7 +85,7 @@ const useBuyNFT = () => {
           duration: 5000,
         });
       } finally {
-        setIsBuyingNFT(false);
+        setIsSellingNFT(false);
       }
 
       return { success };
@@ -68,15 +94,17 @@ const useBuyNFT = () => {
       verifyConnectionAndChain,
       writeContractAsync,
       requiredChainId,
+      listingPriceWei,
       queryClient,
       unsoldNFTsQueryKey,
     ]
   );
 
   return {
-    isBuyingNFT,
-    buyNFT,
+    isSellingNFT,
+    isFetchingListingPrice,
+    sellNFT,
   };
 };
 
-export default useBuyNFT;
+export default useSellNFT;

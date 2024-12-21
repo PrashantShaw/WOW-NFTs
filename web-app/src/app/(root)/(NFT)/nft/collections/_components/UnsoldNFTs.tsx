@@ -3,6 +3,7 @@ import { NFTCard } from "./NFTCard";
 import NFTCardSkeleton from "./NFTCardSkeleton";
 import { ReadContractErrorType } from "viem";
 import { applyFilters, SortByTypes } from "@/lib/utils";
+import { CookingPot } from "lucide-react";
 // import { PinListItem } from "pinata-web3";
 
 type UnsoldNFTsProps = {
@@ -46,8 +47,11 @@ const UnsoldNFTs = ({
           ))}
         </div>
       ) : (
-        <div className="text-center text-muted-foreground font-semibold pt-10">
-          NFT Collection is empty
+        <div className="grid place-items-center gap-4 text-muted-foreground pt-32 pb-28 rounded-lg">
+          <CookingPot className="w-[3rem] h-[3rem]" strokeWidth={1} />
+          <p className="text-center font-medium text-xl ">
+            This collection is empty!
+          </p>
         </div>
       )}
     </div>
