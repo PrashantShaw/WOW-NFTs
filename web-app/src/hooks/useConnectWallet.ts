@@ -1,3 +1,5 @@
+"use client";
+
 import { getRequiredEthChain, shortedAccountAddress } from "@/lib/utils";
 import { useCallback } from "react";
 import toast from "react-hot-toast";

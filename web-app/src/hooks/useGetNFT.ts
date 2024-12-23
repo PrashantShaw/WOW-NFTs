@@ -10,6 +10,7 @@ import { UnsoldMarketItem } from "@/lib/definitions";
 import { useMemo } from "react";
 import { useReadContract } from "wagmi";
 
+// TODO: modify contract to return null if token not found!
 export const useGetNFT = (tokenId: string, enabled = true) => {
   const {
     data: rawNFT,

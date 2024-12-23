@@ -1,3 +1,5 @@
+"use client";
+
 import { LOCALSTORAGE_KEYS } from "@/lib/constants";
 import { useQuery } from "@tanstack/react-query";
 import { PinListItem } from "pinata-web3";

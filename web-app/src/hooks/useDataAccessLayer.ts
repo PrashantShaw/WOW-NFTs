@@ -1,3 +1,5 @@
+"use client";
+
 import { getRequiredEthChain } from "@/lib/utils";
 import { useCallback } from "react";
 import { useAccount } from "wagmi";
