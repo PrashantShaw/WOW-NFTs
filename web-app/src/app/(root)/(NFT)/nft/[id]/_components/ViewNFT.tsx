@@ -2,7 +2,7 @@
 
 import { usePreviewNFT } from "@/hooks/usePreviewNFT";
 import { NFTMarketItem } from "@/lib/definitions";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import NextImg from "next/image";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
@@ -10,12 +10,15 @@ import {
   copyToCLipboard,
   getEthFromWei,
   getEthPriceUsd,
+  getWeiFromEth,
   shortedAccountAddress,
   textCapitalize,
 } from "@/lib/utils";
 import Link from "next/link";
 import {
   ArrowLeftFromLine,
+  CircleDollarSign,
+  CircleX,
   CookingPot,
   Copy,
   Ellipsis,
@@ -45,10 +48,23 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import toast from "react-hot-toast";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import useCreateNFT from "@/hooks/useCreateNFT";
 import useBuyNFT from "@/hooks/useBuyNFT";
 import { useGetNFTMarketItem } from "@/hooks/useGetNFTMarketItem";
+import { useAccount } from "wagmi";
+import useSellNFT from "@/hooks/useSellNFT";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 type ViewNFTProps = {
   id: string;
@@ -171,26 +187,7 @@ const NFTDetails = ({
   isPreview,
 }: NFTDetailsProps) => {
   const router = useRouter();
-  const { buyNFT, isBuyingNFT } = useBuyNFT();
   const ONE_ETH_PRICE_USD = useMemo(() => getEthPriceUsd(), []);
-  const previewCtx = usePreviewNFT();
-  const {
-    createNFT,
-    isCreatingNFT,
-    listingPriceWei,
-    isFetchingListingPrice,
-    listingPriceFetchError,
-  } = useCreateNFT();
-
-  useEffect(() => {
-    if (listingPriceFetchError) {
-      console.log("Error fetching listing price ::", listingPriceFetchError);
-      toast.error("Error fetching Listing Price!", {
-        duration: 5000,
-        position: "bottom-right",
-      });
-    }
-  }, [listingPriceFetchError]);
 
   const handleShareNft = useCallback(async () => {
     const nftShareLink = window.location.href;
@@ -219,45 +216,6 @@ const NFTDetails = ({
     }
   }, []);
 
-  const handleBackToCreateNftForm = useCallback(async () => {
-    router.push("/nft/create?from-preview=true");
-  }, [router]);
-
-  const handleCreateNFT = useCallback(async () => {
-    if (!isPreview || !previewCtx?.previewData) return;
-
-    const formData = previewCtx?.previewData;
-    const listingPriceEth = getEthFromWei(Number(listingPriceWei));
-    try {
-      const result = await createNFT({ ...formData, listingPriceEth });
-      if (result.success) {
-        router.replace("/nft/collections");
-      }
-    } catch (error: unknown | Error) {
-      console.log("Error creating nft!", error);
-      toast.error("Failed to create NFT!", {
-        duration: 5000,
-        position: "bottom-right",
-      });
-    }
-  }, [createNFT, isPreview, listingPriceWei, previewCtx?.previewData, router]);
-
-  const handleBuyNFT = useCallback(async () => {
-    if (isPreview) return;
-
-    try {
-      const result = await buyNFT(nft.tokenId, nft.price);
-      if (result.success) {
-        router.replace("/nft/collections");
-      }
-    } catch (error) {
-      console.log("Error Buying nft!", error);
-      toast.error("Failed to Buy NFT!", {
-        duration: 5000,
-        position: "bottom-right",
-      });
-    }
-  }, [buyNFT, isPreview, nft.price, nft.tokenId, router]);
   return (
     <div className="">
       <div className="flex items-center justify-between gap-2 pb-6">
@@ -381,25 +339,44 @@ const NFTDetails = ({
           1 ETH <EqualApproximately size={14} /> ${ONE_ETH_PRICE_USD}
         </p>
       </div>
+      {/* action buttons */}
+      <ActionButtons
+        isPreview={isPreview}
+        owner={nft.owner}
+        priceWei={nft.price}
+        sold={nft.sold}
+        tokenId={nft.tokenId}
+      />
+    </div>
+  );
+};
+
+const ActionButtons = ({
+  isPreview,
+  tokenId,
+  priceWei,
+  sold,
+  owner,
+}: {
+  isPreview: boolean;
+  tokenId: string;
+  priceWei: string;
+  sold: boolean;
+  owner: `0x${string}`;
+}) => {
+  const router = useRouter();
+  const { address } = useAccount();
+  const isOwner = sold && owner === address;
+
+  const handleBackToCreateNftForm = useCallback(async () => {
+    router.push("/nft/create?from-preview=true");
+  }, [router]);
+  return (
+    <>
       {isPreview ? (
         <div className="grid grid-cols-2 gap-3 pt-14">
-          <Button
-            className="text-[1rem] font-medium"
-            size={"lg"}
-            variant={"default"}
-            onClick={handleCreateNFT}
-            disabled={isCreatingNFT || isFetchingListingPrice}
-          >
-            {isCreatingNFT ? (
-              <>
-                <LoaderCircle className="animate-spin" /> Creating...
-              </>
-            ) : (
-              <>
-                <Upload /> Create
-              </>
-            )}
-          </Button>
+          {/* create button */}
+          <CreateButton isPreview={isPreview} />
           <Button
             className="text-[1rem] font-medium"
             size={"lg"}
@@ -412,23 +389,15 @@ const NFTDetails = ({
       ) : (
         // TODO: add selling button when user owns the nft
         <div className="grid grid-cols-2 gap-3 pt-14">
-          <Button
-            className="text-[1rem] font-medium"
-            size={"lg"}
-            variant={"default"}
-            onClick={handleBuyNFT}
-            disabled={isBuyingNFT}
-          >
-            {isBuyingNFT ? (
-              <>
-                <LoaderCircle className="animate-spin" />
-              </>
-            ) : (
-              <>
-                <ShoppingBag /> Buy
-              </>
-            )}
-          </Button>
+          {isOwner ? (
+            <SellButton tokenId={tokenId} />
+          ) : (
+            <BuyButton
+              isPreview={isPreview}
+              tokenId={tokenId}
+              priceWei={priceWei}
+            />
+          )}
           <Button
             className="text-[1rem] font-medium"
             size={"lg"}
@@ -439,7 +408,259 @@ const NFTDetails = ({
           </Button>
         </div>
       )}
-    </div>
+    </>
+  );
+};
+
+const CreateButton = ({ isPreview }: { isPreview: boolean }) => {
+  const previewCtx = usePreviewNFT();
+  const {
+    createNFT,
+    isCreatingNFT,
+    listingPriceWei,
+    isFetchingListingPrice,
+    listingPriceFetchError,
+  } = useCreateNFT();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (listingPriceFetchError) {
+      console.log("Error fetching listing price ::", listingPriceFetchError);
+      toast.error("Error fetching Listing Price!", {
+        duration: 5000,
+        position: "bottom-right",
+      });
+    }
+  }, [listingPriceFetchError]);
+
+  const handleCreateNFT = useCallback(async () => {
+    if (!isPreview || !previewCtx?.previewData) return;
+
+    const formData = previewCtx?.previewData;
+    const listingPriceEth = getEthFromWei(Number(listingPriceWei));
+    try {
+      const result = await createNFT({ ...formData, listingPriceEth });
+      if (result.success) {
+        router.replace("/nft/collections");
+      }
+    } catch (error: unknown | Error) {
+      console.log("Error creating nft!", error);
+      toast.error("Failed to create NFT!", {
+        duration: 5000,
+        position: "bottom-right",
+      });
+    }
+  }, [createNFT, isPreview, listingPriceWei, previewCtx?.previewData, router]);
+
+  return (
+    <Button
+      className="text-[1rem] font-medium"
+      size={"lg"}
+      variant={"default"}
+      onClick={handleCreateNFT}
+      disabled={isCreatingNFT || isFetchingListingPrice}
+    >
+      {isCreatingNFT ? (
+        <>
+          <LoaderCircle className="animate-spin" /> Creating...
+        </>
+      ) : (
+        <>
+          <Upload /> Create
+        </>
+      )}
+    </Button>
+  );
+};
+
+const BuyButton = ({
+  isPreview,
+  tokenId,
+  priceWei,
+}: {
+  isPreview: boolean;
+  tokenId: string;
+  priceWei: string;
+}) => {
+  const { buyNFT, isBuyingNFT } = useBuyNFT();
+  const router = useRouter();
+
+  const handleBuyNFT = useCallback(async () => {
+    if (isPreview) return;
+
+    try {
+      const result = await buyNFT(tokenId, priceWei);
+      if (result.success) {
+        router.replace("/nft/collections");
+      }
+    } catch (error) {
+      console.log("Error Buying nft!", error);
+      toast.error("Failed to Buy NFT!", {
+        duration: 5000,
+        position: "bottom-right",
+      });
+    }
+  }, [buyNFT, isPreview, priceWei, tokenId, router]);
+  return (
+    <Button
+      className="text-[1rem] font-medium"
+      size={"lg"}
+      variant={"default"}
+      onClick={handleBuyNFT}
+      disabled={isBuyingNFT}
+    >
+      {isBuyingNFT ? (
+        <>
+          <LoaderCircle className="animate-spin" />
+        </>
+      ) : (
+        <>
+          <ShoppingBag /> Buy
+        </>
+      )}
+    </Button>
+  );
+};
+const SellButton = ({ tokenId }: { tokenId: string }) => {
+  const { sellNFT, listingPriceWei, isFetchingListingPrice, isSellingNFT } =
+    useSellNFT();
+  const router = useRouter();
+  const [newPrice, setNewPrice] = useState<string>();
+  const [error, setError] = useState<string | null>(null);
+
+  const listingPriceEth = useMemo(
+    () => getEthFromWei(Number(listingPriceWei ?? 0)),
+    [listingPriceWei]
+  );
+  const handleSellToken = useCallback(async () => {
+    if (newPrice === "" || newPrice === undefined) {
+      setError("Required!");
+      return;
+    }
+    const price = Number(newPrice);
+    const isNan = isNaN(price);
+    if (isNan) {
+      setError("Input is not a number!");
+      return;
+    }
+    const isLess = price <= listingPriceEth;
+    if (isLess) {
+      setError("Price must be greater than the listing price!");
+      return;
+    }
+    const newPriceWei = getWeiFromEth(Number(price));
+    try {
+      const result = await sellNFT(tokenId, newPriceWei.toString());
+      if (result.success) {
+        router.replace("/nft/collections");
+      }
+    } catch (error: unknown | Error) {
+      console.log("Error Selling nft!", error);
+      toast.error("Failed to Sell NFT!", {
+        duration: 5000,
+        position: "bottom-right",
+      });
+    }
+  }, [listingPriceEth, newPrice, router, sellNFT, tokenId]);
+  const handleOnPriceChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      setError(null);
+      setNewPrice(e.target.value);
+    },
+    []
+  );
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button
+          className="text-[1rem] font-medium"
+          size={"lg"}
+          variant={"default"}
+          onClick={handleSellToken}
+          disabled={isSellingNFT || isFetchingListingPrice}
+        >
+          {isSellingNFT ? (
+            <>
+              <LoaderCircle className="animate-spin" />
+            </>
+          ) : (
+            <>
+              <CircleDollarSign /> Sell
+            </>
+          )}
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Sell NFT</DialogTitle>
+          <DialogDescription>
+            <ul className="list-disc pl-4 pt-2">
+              <li>
+                Set a new price for this NFT in order to list it on the
+                marketplace.
+              </li>
+              <li>The new price should be greater than the listing price.</li>
+            </ul>
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex items-center space-x-2">
+          <div className="grid flex-1 gap-2">
+            <Label htmlFor="link" className="sr-only">
+              New Price for NFT
+            </Label>
+            <p className="text-primary font-semibold text-xs">
+              Lising price: {listingPriceEth} ETH
+            </p>
+            <div className="flex relative">
+              <Input
+                className={clsx(
+                  "rounded-tr-none rounded-br-none border-r-0 focus-visible:ring-offset-0 z-20",
+                  error ? "ring-2 ring-red-600  focus-visible:ring-red-600" : ""
+                )}
+                type="number"
+                id="link"
+                placeholder="New NFT price in ETH"
+                value={newPrice}
+                onChange={handleOnPriceChange}
+              />
+              <div className="bg-muted rounded-tr-md rounded-br-md grid place-items-center text-muted-foreground text-sm px-2 z-10">
+                ETH
+              </div>
+              {error ? (
+                <p className="absolute left-0 top-[100%] text-destructive text-xs pt-1">
+                  {error}
+                </p>
+              ) : null}
+            </div>
+          </div>
+        </div>
+        <DialogFooter className="sm:justify-start pt-4">
+          <div className="grid grid-cols-2 w-full gap-2 sm:gap-3">
+            <Button
+              type="button"
+              variant="default"
+              onClick={handleSellToken}
+              disabled={isSellingNFT}
+            >
+              {isSellingNFT ? (
+                <>
+                  <LoaderCircle className="animate-spin" /> Loading
+                </>
+              ) : (
+                <>
+                  <CircleDollarSign /> Sell
+                </>
+              )}
+            </Button>
+            <DialogClose asChild>
+              <Button type="button" variant="secondary">
+                <CircleX /> Close
+              </Button>
+            </DialogClose>
+          </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 

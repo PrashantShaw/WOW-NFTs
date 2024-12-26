@@ -60,7 +60,6 @@ export const SellHoverAction = ({ tokenId }: { tokenId: string }) => {
     () => getEthFromWei(Number(listingPriceWei ?? 0)),
     [listingPriceWei]
   );
-  console.log(newPrice, typeof newPrice);
 
   const handleSellToken = useCallback(async () => {
     if (newPrice === "" || newPrice === undefined) {
