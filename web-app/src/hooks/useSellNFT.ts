@@ -11,6 +11,7 @@ import { type WaitForTransactionReceiptErrorType } from "@wagmi/core";
 import { getConfig } from "@/app/wagmi";
 import { useDataAccessLayer } from "./useDataAccessLayer";
 import { useGetUnsoldNFTsV2 } from "./useGetUnsoldNFTsV2";
+import { useGetNFT } from "./useGetNFT";
 
 const useSellNFT = () => {
   const [isSellingNFT, setIsSellingNFT] = useState(false);
@@ -19,6 +20,7 @@ const useSellNFT = () => {
   const { queryKey: unsoldNFTsQueryKey } = useGetUnsoldNFTsV2(false);
   const queryClient = useQueryClient();
   const { id: requiredChainId } = useMemo(() => getRequiredEthChain(), []);
+  const { invalidateQuery: invalidateGetNFT } = useGetNFT("0", false);
 
   const {
     data: listingPriceWei,
@@ -68,6 +70,7 @@ const useSellNFT = () => {
         });
 
         queryClient.invalidateQueries({ queryKey: unsoldNFTsQueryKey });
+        invalidateGetNFT(tokenId);
         success = true;
         toast.success("NFT Successfully Listed!", {
           position: "bottom-center",
@@ -97,6 +100,7 @@ const useSellNFT = () => {
       requiredChainId,
       queryClient,
       unsoldNFTsQueryKey,
+      invalidateGetNFT,
     ]
   );
 

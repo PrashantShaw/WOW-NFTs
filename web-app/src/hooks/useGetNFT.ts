@@ -7,8 +7,9 @@ import {
 } from "@/lib/utils";
 import { NFT_CONTRACT_CONFIG } from "@/lib/constants";
 import { UnsoldMarketItem } from "@/lib/definitions";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useReadContract } from "wagmi";
+import { useQueryClient } from "@tanstack/react-query";
 
 // TODO: modify contract to return null if token not found!
 export const useGetNFT = (tokenId: string, enabled = true) => {
@@ -26,8 +27,28 @@ export const useGetNFT = (tokenId: string, enabled = true) => {
     chainId: getRequiredEthChain().id,
     query: { enabled, refetchOnWindowFocus: false },
   });
+  const queryClient = useQueryClient();
   console.log("useGetNFT hook called", rawNFT);
   console.log("queryKey ::", queryKey);
+
+  const invalidateQuery = useCallback(
+    (tokenId: string) => {
+      queryClient.invalidateQueries({
+        predicate: (query) => {
+          const queryKey = query.queryKey as [
+            string,
+            { functionName: string; args: [bigint] }
+          ];
+          return (
+            queryKey[0] === "readContract" &&
+            queryKey[1]?.functionName === "fetchNFTByTokenId" &&
+            queryKey[1]?.args[0] === BigInt(tokenId)
+          );
+        },
+      });
+    },
+    [queryClient]
+  );
 
   const NFT = useMemo(() => {
     if (!rawNFT) return null;
@@ -56,5 +77,6 @@ export const useGetNFT = (tokenId: string, enabled = true) => {
     NFTFetchError,
     queryKey,
     fetchNFT,
+    invalidateQuery,
   };
 };

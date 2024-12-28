@@ -11,6 +11,7 @@ import { type WaitForTransactionReceiptErrorType } from "@wagmi/core";
 import { getConfig } from "@/app/wagmi";
 import { useDataAccessLayer } from "./useDataAccessLayer";
 import { useGetUnsoldNFTsV2 } from "./useGetUnsoldNFTsV2";
+import { useGetNFT } from "./useGetNFT";
 
 const useBuyNFT = () => {
   const [isBuyingNFT, setIsBuyingNFT] = useState(false);
@@ -19,6 +20,7 @@ const useBuyNFT = () => {
   const { writeContractAsync } = useWriteContract();
   const { verifyConnectionAndChain } = useDataAccessLayer();
   const { queryKey: unsoldNFTsQueryKey } = useGetUnsoldNFTsV2(false);
+  const { invalidateQuery: invalidateGetNFT } = useGetNFT("0", false);
 
   const buyNFT = useCallback(
     async (tokenId: string, priceWei: string) => {
@@ -42,6 +44,7 @@ const useBuyNFT = () => {
         });
 
         queryClient.invalidateQueries({ queryKey: unsoldNFTsQueryKey });
+        invalidateGetNFT(tokenId);
         success = true;
         toast.success("NFT Purchased!", {
           position: "bottom-center",
@@ -70,6 +73,7 @@ const useBuyNFT = () => {
       requiredChainId,
       queryClient,
       unsoldNFTsQueryKey,
+      invalidateGetNFT,
     ]
   );
 
