@@ -24,7 +24,11 @@ import Link from "next/link";
 import { useAccount, useDisconnect } from "wagmi";
 import Image from "next/image";
 import useConnectWallet from "@/hooks/useConnectWallet";
-import { encodeText, shortedAccountAddress } from "@/lib/utils";
+import {
+  encodeText,
+  getProfileGradientStyle,
+  shortedAccountAddress,
+} from "@/lib/utils";
 import { useRouter } from "next/navigation";
 const NavbarActions = () => {
   const { isConnected, address, addresses } = useAccount();
@@ -75,8 +79,13 @@ const ProfileMenu = ({
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Avatar>
-          <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-          <AvatarFallback>0x</AvatarFallback>
+          <AvatarImage src="https://github.com/shadcnn.png" alt="@shadcn" />
+          <AvatarFallback
+            style={getProfileGradientStyle(address)}
+            className="text-white"
+          >
+            {address.substring(address.length - 3)}
+          </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent>

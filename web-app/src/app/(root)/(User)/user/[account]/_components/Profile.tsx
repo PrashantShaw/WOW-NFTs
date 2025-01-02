@@ -4,12 +4,13 @@ import { useUserNFTs } from "@/hooks/useUserNFTs";
 import {
   copyToCLipboard,
   decodeText,
+  getProfileGradientStyle,
   shortedAccountAddress,
   validateAccountAddress,
 } from "@/lib/utils";
 import { Copy, Loader, RefreshCcw, ShieldX } from "lucide-react";
 import { useParams } from "next/navigation";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import toast from "react-hot-toast";
 import { useAccount } from "wagmi";
 import UserListedNFTs from "./UserListedNFTs";
@@ -57,6 +58,10 @@ const Profile = () => {
   }, []);
 
   const userAddress = account ? shortedAccountAddress(account) : "OX...";
+  const profileGradientStyle = useMemo(
+    () => getProfileGradientStyle(account),
+    [account]
+  );
 
   if (!isValidAddress) {
     return (
@@ -71,15 +76,21 @@ const Profile = () => {
 
   return (
     <div className="pt-[2.5rem]">
-      <h1 className="text-3xl sm:text-5xl font-bold mb-4 flex gap-3 items-end">
-        {userAddress}{" "}
-        <button
-          className="p-2 hover:bg-secondary rounded-md transition-all"
-          onClick={() => handleCopyAccountAddress(account ?? "0x")}
-        >
-          <Copy />
-        </button>
-      </h1>
+      <div className="flex flex-wrap gap-4 items-end mb-4">
+        <div
+          className=" w-[4rem] h-[4rem] border rounded-md"
+          style={profileGradientStyle}
+        />
+        <h1 className="text-3xl sm:text-5xl font-bold  flex gap-3 items-end">
+          {userAddress}{" "}
+          <button
+            className="p-2 hover:bg-secondary rounded-md transition-all"
+            onClick={() => handleCopyAccountAddress(account ?? "0x")}
+          >
+            <Copy />
+          </button>
+        </h1>
+      </div>
       <p className="mb-10 text-lg text-balance">
         {isConnectedUser
           ? "Welcome to your Dashboard! Here, you can explore all the NFTs you’ve purchased and listed on this marketplace. Feel free to expand your collection or showcase your creations by listing more items. Happy trading!"

@@ -192,3 +192,14 @@ export const validateAccountAddress = (address: string) => {
   const isValidAccountAddress = accountRegex.test(address);
   return isValidAccountAddress;
 };
+
+export const getProfileGradientStyle = (address: `0x${string}`) => {
+  if (!validateAccountAddress(address)) {
+    return { background: "#cccccc68" };
+  }
+
+  const color1 = `#${address.slice(2, 8)}`; // First 6 chars
+  const color2 = `#${address.slice(address.length - 6)}`; // last 6 chars
+
+  return { background: `linear-gradient(135deg, ${color1}, ${color2})` };
+};

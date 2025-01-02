@@ -2,13 +2,15 @@
 
 import { useGetUnsoldNFTsV2 } from "@/hooks/useGetUnsoldNFTsV2";
 import {
+  copyToCLipboard,
   encodeText,
   getEthFromWei,
   getEthPriceUsd,
+  getProfileGradientStyle,
   getTopCreators,
   shortedAccountAddress,
 } from "@/lib/utils";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import {
   Table,
   TableBody,
@@ -17,17 +19,30 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Copy, Eye } from "lucide-react";
+import { Copy, UserRoundSearch } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RANK_MEDALS } from "@/lib/constants";
 import Link from "next/link";
+import toast from "react-hot-toast";
 
 // TODO: add action section to table
 const TopCreators = () => {
   const { unsoldNFTs, isPending, unsoldNFTsFetchError } = useGetUnsoldNFTsV2();
   const topCreators = useMemo(() => getTopCreators(unsoldNFTs), [unsoldNFTs]);
 
-  console.log("#################", topCreators);
+  const handleCopyAccountAddress = useCallback(async (address: string) => {
+    const copid = await copyToCLipboard(address);
+    if (copid) {
+      toast.success("Address Copied!", {
+        position: "bottom-right",
+      });
+    } else {
+      toast.error("Failed to copy address!", {
+        position: "bottom-right",
+      });
+    }
+  }, []);
+
   if (isPending) {
     return (
       <div className="text-center text-muted-foreground py-6">loading...</div>
@@ -40,6 +55,7 @@ const TopCreators = () => {
       </div>
     );
   }
+
   return (
     <div className="pt-[8rem]" id="top-creators">
       <h2 className="text-4xl font-semibold tracking-tight first:mt-0 mb-4 text-center">
@@ -55,7 +71,7 @@ const TopCreators = () => {
         <TableHeader>
           <TableRow>
             <TableHead className="w-[100px]">Rank</TableHead>
-            <TableHead>Address</TableHead>
+            <TableHead className="pl-[3.5rem]">Address</TableHead>
             <TableHead>Total Listings</TableHead>
             <TableHead>Total ETH value</TableHead>
             <TableHead className="text-right">Average ETH/NFT</TableHead>
@@ -86,18 +102,33 @@ const TopCreators = () => {
                   )}
                 </TableCell>
                 <TableCell>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className=" w-[2rem] h-[2rem] border rounded-md"
+                      style={getProfileGradientStyle(creator.address)}
+                    />
                     <p className="font-semibold">
                       {shortedAccountAddress(creator.address)}
                     </p>
-                    <Button variant={"ghost"} size={"icon"}>
-                      <Copy />
-                    </Button>
-                    <Button asChild variant={"ghost"} size={"icon"}>
-                      <Link href={`/user/${encodeText(creator.address)}`}>
-                        <Eye />
-                      </Link>
-                    </Button>
+                    <div className="flex pl-1 gap-1">
+                      <Button
+                        variant={"ghost"}
+                        size={"icon"}
+                        onClick={() =>
+                          handleCopyAccountAddress(creator.address)
+                        }
+                      >
+                        <Copy />
+                      </Button>
+                      <Button asChild variant={"ghost"} size={"icon"}>
+                        <Link
+                          href={`/user/${encodeText(creator.address)}`}
+                          target="_blank"
+                        >
+                          <UserRoundSearch />
+                        </Link>
+                      </Button>
+                    </div>
                   </div>
                 </TableCell>
                 <TableCell className="font-semibold">
