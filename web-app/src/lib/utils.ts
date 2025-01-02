@@ -186,3 +186,9 @@ export const decodeText = (encoded: string) => {
   const bytes = bs58.decode(encoded); // Base58 decode
   return new TextDecoder().decode(bytes); // Convert back to string
 };
+
+export const validateAccountAddress = (address: string) => {
+  const accountRegex = /^0x[a-fA-F0-9]{40}$/;
+  const isValidAccountAddress = accountRegex.test(address);
+  return isValidAccountAddress;
+};

@@ -5,8 +5,9 @@ import {
   copyToCLipboard,
   decodeText,
   shortedAccountAddress,
+  validateAccountAddress,
 } from "@/lib/utils";
-import { Copy, Loader, RefreshCcw } from "lucide-react";
+import { Copy, Loader, RefreshCcw, ShieldX } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useCallback } from "react";
 import toast from "react-hot-toast";
@@ -25,6 +26,7 @@ const Profile = () => {
   const { address: connectedAddress } = useAccount();
   const params = useParams<{ account: `0x${string}` }>();
   const decodedAddress = decodeText(params.account);
+  const isValidAddress = validateAccountAddress(decodedAddress);
   const isConnectedUser = decodedAddress === connectedAddress;
   const account = isConnectedUser
     ? connectedAddress
@@ -38,7 +40,7 @@ const Profile = () => {
     purchasedNFTsByUserFetchError,
     fetchPurchasedNFTsByUser,
     fetchListedNFTsByUser,
-  } = useUserNFTs(account);
+  } = useUserNFTs(account, isValidAddress, isValidAddress);
   // console.log("@@@@@@@@@@@@@@@@@", userListedNFTs, userPurchasedNFTs);
 
   const handleCopyAccountAddress = useCallback(async (address: string) => {
@@ -56,6 +58,17 @@ const Profile = () => {
 
   const userAddress = account ? shortedAccountAddress(account) : "OX...";
 
+  if (!isValidAddress) {
+    return (
+      <div className="bg-muted rounded-lg mt-[2.5rem] px-6 py-[8rem] flex flex-col items-center justify-center gap-3">
+        <ShieldX className="text-red-500 w-16 h-16" strokeWidth={1} />
+        <h3 className="text-red-500 text-xl font-medium">
+          Invalid Account Adress!
+        </h3>
+      </div>
+    );
+  }
+
   return (
     <div className="pt-[2.5rem]">
       <h1 className="text-3xl sm:text-5xl font-bold mb-4 flex gap-3 items-end">
@@ -68,10 +81,9 @@ const Profile = () => {
         </button>
       </h1>
       <p className="mb-10 text-lg text-balance">
-        Welcome to your Dashboard! Here, you can explore all the NFTs you’ve
-        purchased and listed on this marketplace. Feel free to expand your
-        collection or showcase your creations by listing more items. Happy
-        trading!
+        {isConnectedUser
+          ? "Welcome to your Dashboard! Here, you can explore all the NFTs you’ve purchased and listed on this marketplace. Feel free to expand your collection or showcase your creations by listing more items. Happy trading!"
+          : "Welcome to my Dashboard! Here, you can explore all the NFTs that I purchased and listed on this marketplace. Feel free explore my collection or showcase your creations by listing more items, just like I did. Happy trading!"}
       </p>
       <div className="border-t" />
       <h2
@@ -84,7 +96,7 @@ const Profile = () => {
         </span>
         <TooltipProvider>
           <Tooltip delayDuration={300}>
-            <TooltipTrigger>
+            <TooltipTrigger asChild>
               <Button
                 variant={"secondary"}
                 size={"icon"}
@@ -127,7 +139,7 @@ const Profile = () => {
         </span>
         <TooltipProvider>
           <Tooltip delayDuration={300}>
-            <TooltipTrigger>
+            <TooltipTrigger asChild>
               <Button
                 variant={"secondary"}
                 size={"icon"}

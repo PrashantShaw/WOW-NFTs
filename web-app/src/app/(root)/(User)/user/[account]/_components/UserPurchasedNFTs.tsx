@@ -54,7 +54,7 @@ const UserPurchasedNFTs = ({
               </Button>
             </Link>
           ) : (
-            <CookingPot />
+            <CookingPot className="text-muted-foreground" />
           )}
         </div>
       )}

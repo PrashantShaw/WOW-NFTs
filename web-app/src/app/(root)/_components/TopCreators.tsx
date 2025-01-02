@@ -2,6 +2,7 @@
 
 import { useGetUnsoldNFTsV2 } from "@/hooks/useGetUnsoldNFTsV2";
 import {
+  encodeText,
   getEthFromWei,
   getEthPriceUsd,
   getTopCreators,
@@ -16,9 +17,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Copy } from "lucide-react";
+import { Copy, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RANK_MEDALS } from "@/lib/constants";
+import Link from "next/link";
 
 // TODO: add action section to table
 const TopCreators = () => {
@@ -90,6 +92,11 @@ const TopCreators = () => {
                     </p>
                     <Button variant={"ghost"} size={"icon"}>
                       <Copy />
+                    </Button>
+                    <Button asChild variant={"ghost"} size={"icon"}>
+                      <Link href={`/user/${encodeText(creator.address)}`}>
+                        <Eye />
+                      </Link>
                     </Button>
                   </div>
                 </TableCell>

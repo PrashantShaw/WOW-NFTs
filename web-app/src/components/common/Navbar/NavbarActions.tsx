@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   AlignVerticalJustifyEnd,
+  Check,
   LayoutDashboard,
   List,
   Plus,
@@ -26,7 +27,7 @@ import useConnectWallet from "@/hooks/useConnectWallet";
 import { encodeText, shortedAccountAddress } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 const NavbarActions = () => {
-  const { isConnected, address } = useAccount();
+  const { isConnected, address, addresses } = useAccount();
   const { connectToWallet } = useConnectWallet();
 
   return (
@@ -34,7 +35,7 @@ const NavbarActions = () => {
       <nav className="flex items-center space-x-0">
         <ThemeToggler />
         <div className="w-2 md:w-3" />
-        {isConnected && address ? (
+        {isConnected && address && addresses ? (
           <div className="flex gap-2 sm:gap-3 items-center">
             <Button size={"sm"} asChild className="text-xs sm:text-sm">
               <Link href={"/nft/create"}>
@@ -42,7 +43,7 @@ const NavbarActions = () => {
                 <Plus className="stroke-2 sm:stroke-[3]" />
               </Link>
             </Button>
-            <ProfileMenu address={address} />
+            <ProfileMenu address={address} addresses={addresses} />
           </div>
         ) : (
           <Button size={"sm"} onClick={connectToWallet} variant={"default"}>
@@ -60,7 +61,13 @@ const NavbarActions = () => {
   );
 };
 
-const ProfileMenu = ({ address }: { address: `0x${string}` }) => {
+const ProfileMenu = ({
+  address,
+  addresses,
+}: {
+  address: `0x${string}`;
+  addresses: readonly `0x${string}`[];
+}) => {
   const { disconnect } = useDisconnect();
   const router = useRouter();
 
@@ -73,7 +80,18 @@ const ProfileMenu = ({ address }: { address: `0x${string}` }) => {
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuLabel>{shortedAccountAddress(address)}</DropdownMenuLabel>
+        <DropdownMenuLabel>
+          {addresses.map((_address) => (
+            <div key={_address} className="flex items-center gap-2 py-1">
+              {address === _address ? (
+                <Check className="w-[1.25rem] text-green-600" />
+              ) : (
+                <div className="w-[1.25rem]" />
+              )}
+              {shortedAccountAddress(_address)}
+            </div>
+          ))}
+        </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => {

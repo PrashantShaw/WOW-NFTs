@@ -54,7 +54,7 @@ const UserListedNFTs = ({
               </Button>
             </Link>
           ) : (
-            <CookingPot />
+            <CookingPot className="text-muted-foreground" />
           )}
         </div>
       )}

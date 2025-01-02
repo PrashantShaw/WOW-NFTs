@@ -8,7 +8,7 @@ import Image from "next/image";
 export default function Footer() {
   return (
     <footer className="border-t px-6 mt-[6rem]">
-      <div className="container flex flex-col items-center justify-between gap-4 py-10 md:h-24 md:flex-row md:py-0">
+      <div className="container flex flex-col items-center justify-between gap-4 py-10 md:h-24 md:flex-row md:py-0 mx-auto ">
         <div className="flex items-center gap-3">
           <Image src={"/icon.png"} width={40} height={40} alt="brand logo" />
           <span className="text-xl font-bold">{BRAND.name}</span>
