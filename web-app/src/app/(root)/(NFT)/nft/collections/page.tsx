@@ -3,7 +3,7 @@ import CollectionsWrapper from "./_components/CollectionsWrapper";
 
 const NFTCollectionsPage = () => {
   return (
-    <div>
+    <div className="animate-fade-in">
       <CollectionsWrapper />
     </div>
   );

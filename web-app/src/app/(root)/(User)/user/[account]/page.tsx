@@ -3,7 +3,7 @@ import Profile from "./_components/Profile";
 
 const page = () => {
   return (
-    <div>
+    <div className="animate-fade-in">
       <Profile />
     </div>
   );

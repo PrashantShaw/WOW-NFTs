@@ -6,7 +6,7 @@ import TopCreators from "./_components/TopCreators";
 // TODO: add top-creators section - ranking of creators based on the amount of eth they will receive once every nfts that they created are sold
 export default function Home() {
   return (
-    <div>
+    <div className="animate-fade-in">
       <Hero />
       <FeaturedNFTs />
       <TopCreators />
