@@ -42,7 +42,6 @@ const Profile = () => {
     fetchPurchasedNFTsByUser,
     fetchListedNFTsByUser,
   } = useUserNFTs(account, isValidAddress, isValidAddress);
-  // console.log("@@@@@@@@@@@@@@@@@", userListedNFTs, userPurchasedNFTs);
 
   const handleCopyAccountAddress = useCallback(async (address: string) => {
     const copid = await copyToCLipboard(address);

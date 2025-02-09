@@ -73,7 +73,6 @@ export const CreateNftForm = ({ fromPreview }: CreateNftFormProps) => {
       ? previewCtx?.previewData
       : defaultFormValues;
 
-  console.log("defaultValues : ", defaultValues);
   const {
     control,
     handleSubmit,

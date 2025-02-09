@@ -77,7 +77,7 @@ const ProfileMenu = ({
 
   return (
     <DropdownMenu modal={false}>
-      <DropdownMenuTrigger asChild>
+      <DropdownMenuTrigger asChild className="cursor-pointer">
         <Avatar>
           <AvatarImage src="https://github.com/shadcnn.png" alt="@shadcn" />
           <AvatarFallback

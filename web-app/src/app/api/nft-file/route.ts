@@ -11,8 +11,6 @@ export async function POST(request: NextRequest) {
     const category = data.get("category") as string;
     const website = data.get("website") as string;
 
-    console.log(file, itemName, description, category, website);
-
     const uploadData = await pinata.upload.file(file, {
       metadata: {
         name: PINATA_FILE_METADATA_NAME,
@@ -24,8 +22,7 @@ export async function POST(request: NextRequest) {
         },
       },
     });
-    // const url = await pinata.gateways.convert(uploadData.IpfsHash);
-    console.log("from route handler nft-file ::", uploadData);
+
     return NextResponse.json(
       { ipfsHash: uploadData.IpfsHash, isDuplicate: uploadData.isDuplicate },
       { status: 200 }

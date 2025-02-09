@@ -71,9 +71,8 @@ export function SearchModal() {
     (e: React.MouseEvent) => {
       const currIdx = Number(e.currentTarget.getAttribute("data-index") ?? -1);
       setSelectedIndex(currIdx);
-      console.log("Mouse Over:", searchResults[currIdx]);
     },
-    [searchResults]
+    []
   );
   const handleClickOnSearchResult = React.useCallback(
     (e: React.MouseEvent) => {

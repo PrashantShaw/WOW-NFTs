@@ -11,6 +11,7 @@ import { type State, WagmiProvider } from "wagmi";
 import { getConfig } from "./wagmi";
 import { NftFormData } from "./(root)/(NFT)/nft/create/_components/CreateNftForm";
 import { createContext } from "react";
+import NextTopLoader, { NextTopLoaderProps } from "nextjs-toploader";
 
 export const PreviewContext = createContext<{
   previewData: NftFormData | undefined;
@@ -36,11 +37,17 @@ export function Providers(props: {
     enableSystem: true,
     disableTransitionOnChange: true,
   };
+  const topLoaderProps: NextTopLoaderProps = {
+    color: "#7c3aed",
+    height: 3,
+    showSpinner: false,
+  };
   return (
     <NextThemesProvider {...themeProps}>
       <WagmiProvider config={config} initialState={props.initialState}>
         <QueryClientProvider client={queryClient}>
           <PreviewContext.Provider value={{ previewData, setPreviewData }}>
+            <NextTopLoader {...topLoaderProps} />
             {props.children}
           </PreviewContext.Provider>
         </QueryClientProvider>

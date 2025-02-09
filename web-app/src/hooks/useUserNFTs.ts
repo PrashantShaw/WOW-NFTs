@@ -44,11 +44,6 @@ export const useUserNFTs = (
     query: { enabled: enabledUserPurchasedNFTs, refetchOnWindowFocus: false },
     account: account ?? connectedAccount,
   });
-  console.log(
-    "useUserNFTs hook called",
-    rawUserListedNFTs,
-    rawUserPurchasedNFTs
-  );
 
   const userListedNFTs = useMemo(() => {
     if (!rawUserListedNFTs) return [];

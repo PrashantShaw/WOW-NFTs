@@ -20,7 +20,6 @@ export const useGetUnsoldNFTs = (enabled = true) => {
     chainId: getRequiredEthChain().id,
     query: { enabled, refetchOnWindowFocus: false },
   });
-  console.log("useGetUnsoldNFTs hook called", rawNFTs);
 
   const {
     data: pinataFileMetadata,
@@ -39,15 +38,6 @@ export const useGetUnsoldNFTs = (enabled = true) => {
     enabled,
     refetchOnWindowFocus: false,
   });
-
-  console.log("pinataFileMetadata :", pinataFileMetadata);
-  console.log("pinataMetadataError :", pinataMetadataError);
-
-  console.log(
-    "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$",
-    rawNFTs,
-    pinataFileMetadata
-  );
 
   const unsoldNFTs = useMemo(() => {
     if (!rawNFTs || !pinataFileMetadata) return [];

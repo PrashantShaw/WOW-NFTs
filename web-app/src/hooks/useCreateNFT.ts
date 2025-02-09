@@ -68,9 +68,8 @@ const useCreateNFT = () => {
           method: "POST",
           body: formDataBody,
         });
-        const { ipfsHash, isDuplicate }: NFTFileUploadResponseData =
+        const { ipfsHash }: NFTFileUploadResponseData =
           await uploadRequest.json();
-        console.log("Upload data :", ipfsHash, isDuplicate);
 
         const priceInWei = getWeiFromEth(priceInEth);
         const listingPriceInWei = getWeiFromEth(listingPriceEth);

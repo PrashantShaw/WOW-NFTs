@@ -28,8 +28,6 @@ export const useGetNFT = (tokenId: string, enabled = true) => {
     query: { enabled, refetchOnWindowFocus: false },
   });
   const queryClient = useQueryClient();
-  console.log("useGetNFT hook called", rawNFT);
-  console.log("queryKey ::", queryKey);
 
   const invalidateQuery = useCallback(
     (tokenId: string) => {

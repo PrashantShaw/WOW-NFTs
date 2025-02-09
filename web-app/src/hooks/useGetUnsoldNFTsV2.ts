@@ -27,8 +27,7 @@ export const useGetUnsoldNFTsV2 = (enabled = true) => {
     chainId: getRequiredEthChain().id,
     query: { enabled, refetchOnWindowFocus: false },
   });
-  console.log("useGetUnsoldNFTsV2 hook called", rawNFTs);
-  console.log("queryKey ::", queryKey);
+
   const unsoldNFTs = useMemo(() => {
     if (!rawNFTs) return [];
 
