@@ -269,6 +269,7 @@ contract NFTMarketplace is ERC721URIStorage {
         uint256 tokenId
     ) public view returns (MarketItemWithURI memory) {
         MarketItem storage item = idMarketItem[tokenId];
+        // TODO: check is 'item' found or not
         MarketItemWithURI memory requiredItem = MarketItemWithURI({
             tokenId: item.tokenId,
             seller: item.seller,
