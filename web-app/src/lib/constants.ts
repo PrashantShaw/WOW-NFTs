@@ -1,6 +1,6 @@
 import { NFT_ABI } from "@/abi/NFTMarketplace";
 import { defineChain } from "viem";
-import { mainnet, sepolia, holesky } from "wagmi/chains";
+import { mainnet, sepolia, hoodi } from "wagmi/chains";
 import {
   ArrowDownAZ,
   ArrowDownNarrowWide,
@@ -45,7 +45,7 @@ export const hardhat_localhost = defineChain({
 export const WEI_IN_ONE_ETH = 10 ** 18;
 
 export const ETH_CHAINS = {
-  holesky,
+  hoodi,
   sepolia,
   mainnet,
   hardhat_localhost,

@@ -8,8 +8,8 @@ module.exports = {
   solidity: "0.8.27",
   defaultNetwork: "localhost",
   networks: {
-    holesky: {
-      url: `https://holesky.infura.io/v3/${INFURA_API_KEY}`,
+    hoodi: {
+      url: `https://hoodi.infura.io/v3/${INFURA_API_KEY}`,
       accounts: [ACCOUNT_PRIVATE_KEY],
     },
   },

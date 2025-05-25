@@ -34,7 +34,7 @@ export function debounce<F extends (...args: Parameters<F>) => ReturnType<F>>(
 
 export const getRequiredEthChain = () => {
   const ETH_NETWORK =
-    (process.env.NEXT_PUBLIC_ETH_NETWORK as ETH_NETWORKS) || "holesky";
+    (process.env.NEXT_PUBLIC_ETH_NETWORK as ETH_NETWORKS) || "hoodi";
 
   return ETH_CHAINS[ETH_NETWORK];
 };
